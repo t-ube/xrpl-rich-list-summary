@@ -1,7 +1,7 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 設定をここに記述
+  distDir: '.dist'
 }
 
 module.exports = nextConfig
