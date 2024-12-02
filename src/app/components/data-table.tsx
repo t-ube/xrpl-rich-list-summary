@@ -8,7 +8,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -34,7 +34,7 @@ interface Summary {
   created_at: string
 }
 
-const ChangeCell = ({ change, percentage }: { change: number | null; percentage: number | null }) => {
+const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; percentage: number | null; isMobile: boolean }) => {
   if (!change || !percentage) return <span>-</span>
   
   const isPositive = change > 0
@@ -43,7 +43,7 @@ const ChangeCell = ({ change, percentage }: { change: number | null; percentage:
 
   return (
     <span className={color}>
-      {sign}{change.toLocaleString()} XRP
+      {sign}{change.toLocaleString()} {!isMobile && ' XRP'}
       <br />
       <span className="text-sm">
         ({sign}{percentage.toFixed(2)}%)
@@ -68,9 +68,26 @@ const LastUpdated = ({ timestamp }: { timestamp: string }) => {
   )
 }
 
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+    
+    return () => window.removeEventListener('resize', checkIsMobile)
+  }, [])
+
+  return isMobile
+}
+
 export default function DataTable({ data }: { data: Summary[] }) {
   const [sorting, setSorting] = useState<SortingState>([])
-
+  const isMobile = useIsMobile()
   const latestTimestamp = data.length > 0 ? data[0].created_at : null
 
   const columns: ColumnDef<Summary>[] = [
@@ -78,32 +95,43 @@ export default function DataTable({ data }: { data: Summary[] }) {
       accessorKey: 'grouped_label',
       header: ({ column }) => {
         return (
-          <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting()}>
-            Wallet Label
+          <div className="flex items-center cursor-pointer bg-white" onClick={() => column.toggleSorting()}>
+            {isMobile ? 'Label' : 'Wallet Label'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </div>
         )
       },
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <ExchangeIcon exchange={row.getValue('grouped_label')} />
-          <span className="font-medium">{row.getValue('grouped_label')}</span>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const label = row.getValue('grouped_label') as string
+        return (
+          <div className="flex items-center gap-2 bg-white">
+            <ExchangeIcon exchange={label} />
+            <span className="font-medium">
+              {isMobile ? (label.length > 10 ? `${label.slice(0, 8)}...` : label) : label}
+              {isMobile && label.length > 10 && (
+                <span className="hidden group-hover:block absolute bg-gray-800 text-white p-2 rounded shadow-lg z-10 text-sm">
+                  {label}
+                </span>
+              )}
+            </span>
+          </div>
+        )
+      },
     },
     {
       accessorKey: 'total_xrp',
       header: ({ column }) => {
         return (
           <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-            Total XRP
+            {isMobile ? 'Total' : 'Total XRP'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </div>
         )
       },
       cell: ({ row }) => (
         <div className="text-right font-medium">
-          {row.getValue<number>('total_xrp').toLocaleString()} XRP
+          {row.getValue<number>('total_xrp').toLocaleString()}
+          {!isMobile && ' XRP'}
         </div>
       ),
     },
@@ -111,7 +139,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
       accessorKey: 'change_1d',
       header: ({ column }) => (
         <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          24h Change
+          {isMobile ? '24h' : '24h Change'}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -120,6 +148,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
           <ChangeCell 
             change={row.getValue('change_1d')}
             percentage={row.original.percentage_1d}
+            isMobile={isMobile}
           />
         </div>
       ),
@@ -128,7 +157,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
       accessorKey: 'change_7d',
       header: ({ column }) => (
         <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          7d Change
+          {isMobile ? '7d' : '7d Change'}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -137,6 +166,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
           <ChangeCell 
             change={row.getValue('change_7d')}
             percentage={row.original.percentage_7d}
+            isMobile={isMobile}
           />
         </div>
       ),
@@ -145,7 +175,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
       accessorKey: 'change_30d',
       header: ({ column }) => (
         <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          30d Change
+          {isMobile ? '30d' : '30d Change'}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -154,6 +184,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
           <ChangeCell 
             change={row.getValue('change_30d')} 
             percentage={row.original.percentage_30d}
+            isMobile={isMobile}
           />
         </div>
       ),
@@ -163,7 +194,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
       header: ({ column }) => {
         return (
           <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-            Total Wallets
+            {isMobile ? 'Wallets' : 'Total Wallets'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </div>
         )
@@ -188,51 +219,68 @@ export default function DataTable({ data }: { data: Summary[] }) {
   })
 
   return (
-    <div>
+    <div className="w-full">
       {latestTimestamp && <LastUpdated timestamp={latestTimestamp} />}
       <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+        <div className="overflow-x-auto relative">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header, index) => {
+                    return (
+                      <TableHead 
+                        key={header.id} 
+                        className={`whitespace-nowrap ${
+                          index === 0 
+                            ? 'sticky left-0 z-10 border-r bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' 
+                            : ''
+                        }`}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    )
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="group relative"
+                  >
+                    {row.getVisibleCells().map((cell, index) => (
+                      <TableCell 
+                        key={cell.id} 
+                        className={`whitespace-nowrap ${
+                          index === 0 
+                            ? 'sticky left-0 z-10 border-r bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' 
+                            : ''
+                        }`}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   )
