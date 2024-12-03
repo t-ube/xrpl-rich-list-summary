@@ -34,7 +34,7 @@ const EXCHANGE_ICONS: Record<string, string> = {
   'Gate.io' : '/exchange-icons/gate1.svg',
   'SwissBorg' : '/exchange-icons/swissborg.svg',
   'Wirex' : '/exchange-icons/Wirex_idRZLQ24WL_0.svg',
-  'Paribu' : '/exchange-icons/Paribu Icon.svg',
+  'Paribu' : '/exchange-icons/Paribu-Icon.svg',
   'Crypto.com' : '/exchange-icons/crypto.com-logo.svg',
   'gatehub' : '/exchange-icons/gatehub-svgrepo-com.svg',
   'Mercado Bitcoin' : '/exchange-icons/mercado@logotyp.us.svg',
