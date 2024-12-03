@@ -109,8 +109,8 @@ export default function DataTable({ data }: { data: Summary[] }) {
             <span className="font-medium">
               {isMobile ? (label.length > 10 ? `${label.slice(0, 8)}...` : label) : label}
               {isMobile && label.length > 10 && (
-                <span className="hidden group-hover:block absolute bg-gray-800 text-white p-2 rounded shadow-lg z-10 text-sm">
-                  {label}
+                <span className="hidden group-hover:block absolute left-full top-2 ml-2 bg-gray-800 text-white p-2 rounded shadow-lg z-50 text-sm whitespace-nowrap">
+                {label}
                 </span>
               )}
             </span>
