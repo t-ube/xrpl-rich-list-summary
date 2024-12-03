@@ -38,7 +38,7 @@ const Disclaimer = () => {
               </p>
               
               <p>
-                <span className="font-semibold">Updates:</span> Data is updated once daily at approximately 01:00 UTC.
+                <span className="font-semibold">Updates:</span> Data is updated hourly.
               </p>
             </div>
           </AlertDescription>
