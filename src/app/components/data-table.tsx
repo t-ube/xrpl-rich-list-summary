@@ -25,12 +25,14 @@ interface Summary {
   grouped_label: string
   count: number
   total_xrp: number
-  change_1h: number | null
-  percentage_1h: number | null
-  change_3h: number | null
-  percentage_3h: number | null
+  change_2h: number | null
+  percentage_2h: number | null
+  change_4h: number | null
+  percentage_4h: number | null
   change_6h: number | null
   percentage_6h: number | null
+  change_12h: number | null
+  percentage_12h: number | null
   change_24h: number | null
   percentage_24h: number | null
   change_168h: number | null
@@ -142,36 +144,36 @@ export default function DataTable({ data }: { data: Summary[] }) {
       ),
     },
     {
-      accessorKey: 'change_1h',
+      accessorKey: 'change_2h',
       header: ({ column }) => (
         <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          {isMobile ? '1h' : '1h Change'}
+          {isMobile ? '2h' : '2h Change'}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
       cell: ({ row }) => (
         <div className="text-right">
           <ChangeCell 
-            change={row.getValue('change_1h')}
-            percentage={row.original.percentage_1h}
+            change={row.getValue('change_2h')}
+            percentage={row.original.percentage_2h}
             isMobile={isMobile}
           />
         </div>
       ),
     },
     {
-      accessorKey: 'change_3h',
+      accessorKey: 'change_4h',
       header: ({ column }) => (
         <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          {isMobile ? '3h' : '3h Change'}
+          {isMobile ? '4h' : '4h Change'}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
       cell: ({ row }) => (
         <div className="text-right">
           <ChangeCell 
-            change={row.getValue('change_3h')}
-            percentage={row.original.percentage_3h}
+            change={row.getValue('change_4h')}
+            percentage={row.original.percentage_4h}
             isMobile={isMobile}
           />
         </div>
@@ -190,6 +192,24 @@ export default function DataTable({ data }: { data: Summary[] }) {
           <ChangeCell 
             change={row.getValue('change_6h')}
             percentage={row.original.percentage_6h}
+            isMobile={isMobile}
+          />
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'change_12h',
+      header: ({ column }) => (
+        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
+          {isMobile ? '12h' : '12h Change'}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-right">
+          <ChangeCell 
+            change={row.getValue('change_12h')}
+            percentage={row.original.percentage_12h}
             isMobile={isMobile}
           />
         </div>
