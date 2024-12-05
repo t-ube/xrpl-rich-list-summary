@@ -7,7 +7,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
-  sortingFns,
+  Row,
 } from '@tanstack/react-table'
 import { useState, useEffect } from 'react'
 import {
@@ -53,7 +53,7 @@ const percentageKeyMap: Record<ChangeKeys, PercentageKeys> = {
 }
 
 // 共通のソート関数
-const createChangeSortingFn = (columnId: string) => (rowA: any, rowB: any) => {
+const createChangeSortingFn = (columnId: string) => (rowA: Row<Summary>, rowB: Row<Summary>) => {
   const changeKey = columnId as ChangeKeys
   const percentageKey = percentageKeyMap[changeKey]
   
