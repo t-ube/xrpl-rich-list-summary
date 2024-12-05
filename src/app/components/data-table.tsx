@@ -7,6 +7,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  sortingFns,
 } from '@tanstack/react-table'
 import { useState, useEffect } from 'react'
 import {
@@ -25,14 +26,10 @@ interface Summary {
   grouped_label: string
   count: number
   total_xrp: number
-  change_2h: number | null
-  percentage_2h: number | null
-  change_4h: number | null
-  percentage_4h: number | null
-  change_6h: number | null
-  percentage_6h: number | null
-  change_12h: number | null
-  percentage_12h: number | null
+  change_1h: number | null
+  percentage_1h: number | null
+  change_3h: number | null
+  percentage_3h: number | null
   change_24h: number | null
   percentage_24h: number | null
   change_168h: number | null
@@ -42,19 +39,65 @@ interface Summary {
   created_at: string
 }
 
+// 型定義の拡張
+type ChangeKeys = 'change_1h' | 'change_3h' | 'change_24h' | 'change_168h' | 'change_720h'
+type PercentageKeys = 'percentage_1h' | 'percentage_3h' | 'percentage_24h' | 'percentage_168h' | 'percentage_720h'
+
+// キーのマッピング
+const percentageKeyMap: Record<ChangeKeys, PercentageKeys> = {
+  'change_1h': 'percentage_1h',
+  'change_3h': 'percentage_3h',
+  'change_24h': 'percentage_24h',
+  'change_168h': 'percentage_168h',
+  'change_720h': 'percentage_720h',
+}
+
+// 共通のソート関数
+const createChangeSortingFn = (columnId: string) => (rowA: any, rowB: any) => {
+  const changeKey = columnId as ChangeKeys
+  const percentageKey = percentageKeyMap[changeKey]
+  
+  const aChange = rowA.getValue(changeKey) as number | null
+  const bChange = rowB.getValue(changeKey) as number | null
+  const aPercentage = rowA.original[percentageKey] as number | null
+  const bPercentage = rowB.original[percentageKey] as number | null
+  
+  function isEffectiveZero(change: number | null, percentage: number | null) {
+    if (!change || !percentage) return true
+    return Math.round(change) === 0 || Math.round(percentage) === 0
+  }
+
+  const aRounded = aChange ? Math.round(aChange) : 0
+  const bRounded = bChange ? Math.round(bChange) : 0
+  
+  const aIsZero = isEffectiveZero(aChange, aPercentage)
+  const bIsZero = isEffectiveZero(bChange, bPercentage)
+
+  if (aIsZero && !bIsZero) return bRounded < 0 ? 1 : -1
+  if (!aIsZero && bIsZero) return aRounded < 0 ? -1 : 1
+  if (aIsZero && bIsZero) return 0
+  
+  return aRounded - bRounded
+}
+
 const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; percentage: number | null; isMobile: boolean }) => {
   if (!change || !percentage) return <span>-</span>
   
-  const isPositive = change > 0
+  const roundedChange = Math.round(change)
+  const roundedPercentage = Math.round(percentage)
+
+  if (roundedChange === 0 || roundedPercentage === 0) return <span>-</span>
+  
+  const isPositive = roundedChange > 0
   const color = isPositive ? 'text-green-600' : 'text-red-600'
   const sign = isPositive ? '+' : ''
 
   return (
     <span className={color}>
-      {sign}{change.toLocaleString()} {!isMobile && ' XRP'}
+      {sign}{roundedChange.toLocaleString()} {!isMobile && ' XRP'}
       <br />
       <span className="text-sm">
-        ({sign}{percentage.toFixed(2)}%)
+        ({sign}{roundedPercentage}%)
       </span>
     </span>
   )
@@ -138,82 +181,49 @@ export default function DataTable({ data }: { data: Summary[] }) {
       },
       cell: ({ row }) => (
         <div className="text-right font-medium">
-          {row.getValue<number>('total_xrp').toLocaleString()}
+          {Math.round(row.getValue<number>('total_xrp')).toLocaleString()}
           {!isMobile && ' XRP'}
         </div>
       ),
     },
     {
-      accessorKey: 'change_2h',
+      accessorKey: 'change_1h',
       header: ({ column }) => (
-        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          {isMobile ? '2h' : '2h Change'}
+        <div className="text-right flex items-center justify-end cursor-pointer" 
+             onClick={() => column.toggleSorting()}>
+          {isMobile ? '1h' : '1h Change'}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
       cell: ({ row }) => (
         <div className="text-right">
           <ChangeCell 
-            change={row.getValue('change_2h')}
-            percentage={row.original.percentage_2h}
+            change={row.getValue('change_1h')}
+            percentage={row.original.percentage_1h}
             isMobile={isMobile}
           />
         </div>
       ),
+      sortingFn: createChangeSortingFn('change_1h')
     },
     {
-      accessorKey: 'change_4h',
+      accessorKey: 'change_3h',
       header: ({ column }) => (
         <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          {isMobile ? '4h' : '4h Change'}
+          {isMobile ? '3h' : '3h Change'}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
       cell: ({ row }) => (
         <div className="text-right">
           <ChangeCell 
-            change={row.getValue('change_4h')}
-            percentage={row.original.percentage_4h}
+            change={row.getValue('change_3h')}
+            percentage={row.original.percentage_3h}
             isMobile={isMobile}
           />
         </div>
       ),
-    },
-    {
-      accessorKey: 'change_6h',
-      header: ({ column }) => (
-        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          {isMobile ? '6h' : '6h Change'}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="text-right">
-          <ChangeCell 
-            change={row.getValue('change_6h')}
-            percentage={row.original.percentage_6h}
-            isMobile={isMobile}
-          />
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'change_12h',
-      header: ({ column }) => (
-        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          {isMobile ? '12h' : '12h Change'}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="text-right">
-          <ChangeCell 
-            change={row.getValue('change_12h')}
-            percentage={row.original.percentage_12h}
-            isMobile={isMobile}
-          />
-        </div>
-      ),
+      sortingFn: createChangeSortingFn('change_3h')
     },
     {
       accessorKey: 'change_24h',
@@ -232,6 +242,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
           />
         </div>
       ),
+      sortingFn: createChangeSortingFn('change_24h')
     },
     {
       accessorKey: 'change_168h',
@@ -250,6 +261,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
           />
         </div>
       ),
+      sortingFn: createChangeSortingFn('change_168h')
     },
     {
       accessorKey: 'change_720h',
@@ -268,6 +280,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
           />
         </div>
       ),
+      sortingFn: createChangeSortingFn('change_720h')
     },
     {
       accessorKey: 'count',
