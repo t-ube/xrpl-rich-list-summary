@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 
 export const revalidate = 3600; // 1時間キャッシュ
 
+export const runtime = 'edge';
+
 export async function GET(
   request: Request,
   { params }: { params: { label: string } }
