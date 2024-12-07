@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/table'
 import { ArrowUpDown } from 'lucide-react'
 import { ExchangeIcon } from './exchange-icon'
+import WalletBalanceChart from '@/app/components/wallet-balance-chart'
+
 
 interface Summary {
   id: number
@@ -140,6 +142,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
   const [sorting, setSorting] = useState<SortingState>([])
   const isMobile = useIsMobile()
   const latestTimestamp = data.length > 0 ? data[0].created_at : null
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
 
   const columns: ColumnDef<Summary>[] = [
     {
@@ -159,11 +162,6 @@ export default function DataTable({ data }: { data: Summary[] }) {
             <ExchangeIcon exchange={label} />
             <span className="font-medium">
               {isMobile ? (label.length > 10 ? `${label.slice(0, 8)}...` : label) : label}
-              {isMobile && label.length > 10 && (
-                <span className="hidden group-hover:block absolute left-full top-2 ml-2 bg-gray-800 text-white p-2 rounded shadow-lg z-50 text-sm whitespace-nowrap">
-                {label}
-                </span>
-              )}
             </span>
           </div>
         )
@@ -311,6 +309,10 @@ export default function DataTable({ data }: { data: Summary[] }) {
     },
   })
 
+  const handleRowClick = (label: string) => {
+    setSelectedWallet(label);
+  };
+
   return (
     <div className="w-full">
       {latestTimestamp && <LastUpdated timestamp={latestTimestamp} />}
@@ -349,6 +351,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     className="group relative"
+                    onClick={() => handleRowClick(row.getValue('grouped_label'))}
                   >
                     {row.getVisibleCells().map((cell, index) => (
                       <TableCell 
@@ -375,6 +378,12 @@ export default function DataTable({ data }: { data: Summary[] }) {
           </Table>
         </div>
       </div>
+      <WalletBalanceChart
+        walletLabel={selectedWallet || ''}
+        isOpen={!!selectedWallet}
+        onClose={() => setSelectedWallet(null)}
+        isMobile={isMobile}
+      />
     </div>
   )
 }
