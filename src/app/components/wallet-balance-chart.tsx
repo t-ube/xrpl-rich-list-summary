@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { X } from 'lucide-react';
+import { ExchangeIcon } from './exchange-icon'
 
 interface TimeSeriesData {
   time: string;
@@ -35,7 +36,7 @@ const WalletBalanceChart: React.FC<WalletBalanceChartProps> = ({
           if (!res.ok) throw new Error('Failed to fetch data');
           return res.json();
         })
-        .then(setData)
+        .then(data => setData([...data].reverse())) // データを反転
         .catch(err => {
           console.error('Error fetching time series data:', err);
           setError('Failed to load chart data');
@@ -45,10 +46,10 @@ const WalletBalanceChart: React.FC<WalletBalanceChartProps> = ({
   }, [walletLabel, isOpen]);
 
   const slideClass = isMobile
-    ? `fixed bottom-0 left-0 right-0 h-[70vh] transform transition-transform duration-300 ease-in-out ${
+    ? `fixed bottom-0 left-0 right-0 h-[70vh] transform transition-transform duration-300 ease-in-out border-t border-gray-200 ${
         isOpen ? 'translate-y-0' : 'translate-y-full'
       }`
-    : `fixed right-0 top-0 h-full w-[600px] transform transition-transform duration-300 ease-in-out ${
+    : `fixed right-0 top-0 h-full w-[600px] transform transition-transform duration-300 ease-in-out border-l border-gray-200 ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`;
 
@@ -68,7 +69,10 @@ const WalletBalanceChart: React.FC<WalletBalanceChartProps> = ({
     >
       <div className="h-full flex flex-col">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold">{walletLabel} - XRP Balance</h3>
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <ExchangeIcon exchange={walletLabel} />
+            <span>{walletLabel} - XRP Balance</span>
+          </h3>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"

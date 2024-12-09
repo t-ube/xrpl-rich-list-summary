@@ -106,20 +106,23 @@ const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; p
 }
 
 const LastUpdated = ({ timestamp }: { timestamp: string }) => {
-  const date = new Date(timestamp)
+  const formatDate = (date: Date) => {
+    const hours = date.getHours();
+    return `${date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour12: false
+    })}, ${String(hours === 24 ? '00' : hours.toString().padStart(2, '0'))}:${String(date.getMinutes()).padStart(2, '0')} UTC`;
+  };
+
+  const date = new Date(timestamp);
   return (
     <div className="text-sm text-gray-500 mb-4">
-      Last updated: {date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      })} UTC
+      Last updated: {formatDate(date)}
     </div>
-  )
-}
+  );
+};
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false)
@@ -350,7 +353,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="group relative"
+                    className="group relative cursor-pointer"
                     onClick={() => handleRowClick(row.getValue('grouped_label'))}
                   >
                     {row.getVisibleCells().map((cell, index) => (

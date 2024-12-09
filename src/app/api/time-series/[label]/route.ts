@@ -14,9 +14,8 @@ export async function GET(
     .from('xrpl_rich_list_summary')
     .select('created_at, total_xrp')
     .eq('grouped_label', params.label)
-    .gte('created_at', new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString())
-    .order('created_at', { ascending: true })
-    .limit(30);
+    .order('created_at', { ascending: false })
+    .limit(48);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
