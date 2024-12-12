@@ -103,10 +103,10 @@ export function CloudinaryExchangeIcon({ exchange, size = 32 }: ExchangeIconProp
       height={size}
       format="auto"
       quality="auto"
-      className="inline-block"
+      className="inline-block object-contain"
       style={{
-        minWidth: size,
-        minHeight: size
+        width: size,
+        height: size
       }}
     />
   )

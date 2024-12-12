@@ -59,16 +59,44 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
   };
 
   const transformData = React.useMemo(() => {
-    return data.map((item) => {
-      const backgroundColor = getBackgroundColor(item.percentage_24h || 0);
-      return {
-        name: item.grouped_label,
-        size: item.total_xrp,
-        percentage: Math.round(item.percentage_24h || 0),
-        fill: backgroundColor,
-        textColor: getTextColor(backgroundColor)
-      };
+    // 全体の合計を計算
+    const totalSize = data.reduce((sum, item) => sum + item.total_xrp, 0);
+    // 最小しきい値（例：全体の0.001%未満は除外）
+    const threshold = totalSize * 0.00001;
+  
+     // メインデータとその他に分類
+    const mainData = [];
+    let othersSize = 0;
+    let othersCount = 0;
+
+    data.forEach(item => {
+      if (item.total_xrp >= threshold) {
+        const backgroundColor = getBackgroundColor(item.percentage_24h || 0);
+        mainData.push({
+          name: item.grouped_label,
+          size: item.total_xrp,
+          percentage: Math.round(item.percentage_24h || 0),
+          fill: backgroundColor,
+          textColor: getTextColor(backgroundColor)
+        });
+      } else {
+        othersSize += item.total_xrp;
+        othersCount++;
+      }
     });
+
+    // 小さいデータが存在する場合のみ「その他」を追加
+    if (othersCount > 0) {
+      mainData.push({
+        name: `Others (${othersCount} labels)`,
+        size: othersSize,
+        percentage: 0,
+        fill: '#90A4AE',  // ニュートラルカラー
+        textColor: '#000000'
+      });
+    }
+
+  return mainData;
   }, [data]);
 
   const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
@@ -114,6 +142,7 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
             aspectRatio={4/3}
             nameKey="name"
             fill="#fff"
+            isAnimationActive={false}
           >
             <Tooltip content={<CustomTooltip />} />
           </Treemap>
