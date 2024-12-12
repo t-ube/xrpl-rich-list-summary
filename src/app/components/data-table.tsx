@@ -105,25 +105,6 @@ const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; p
   )
 }
 
-const LastUpdated = ({ timestamp }: { timestamp: string }) => {
-  const formatDate = (date: Date) => {
-    const hours = date.getHours();
-    return `${date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour12: false
-    })}, ${String(hours === 24 ? '00' : hours.toString().padStart(2, '0'))}:${String(date.getMinutes()).padStart(2, '0')} UTC`;
-  };
-
-  const date = new Date(timestamp);
-  return (
-    <div className="text-sm text-gray-500 mb-4">
-      Last updated: {formatDate(date)}
-    </div>
-  );
-};
-
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -144,7 +125,6 @@ const useIsMobile = () => {
 export default function DataTable({ data }: { data: Summary[] }) {
   const [sorting, setSorting] = useState<SortingState>([])
   const isMobile = useIsMobile()
-  const latestTimestamp = data.length > 0 ? data[0].created_at : null
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
 
   const columns: ColumnDef<Summary>[] = [
@@ -206,25 +186,6 @@ export default function DataTable({ data }: { data: Summary[] }) {
         </div>
       ),
       sortingFn: createChangeSortingFn('change_1h')
-    },
-    {
-      accessorKey: 'change_3h',
-      header: ({ column }) => (
-        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-          {isMobile ? '3h' : '3h Change'}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="text-right">
-          <ChangeCell 
-            change={row.getValue('change_3h')}
-            percentage={row.original.percentage_3h}
-            isMobile={isMobile}
-          />
-        </div>
-      ),
-      sortingFn: createChangeSortingFn('change_3h')
     },
     {
       accessorKey: 'change_24h',
@@ -318,67 +279,76 @@ export default function DataTable({ data }: { data: Summary[] }) {
 
   return (
     <div className="w-full">
-      {latestTimestamp && <LastUpdated timestamp={latestTimestamp} />}
-      <div className="rounded-md border">
-        <div className="overflow-x-auto relative">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header, index) => {
-                    return (
-                      <TableHead 
-                        key={header.id} 
-                        className={`whitespace-nowrap ${
-                          index === 0 
-                            ? 'sticky left-0 z-10 border-r bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' 
-                            : ''
-                        }`}
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="group relative cursor-pointer"
-                    onClick={() => handleRowClick(row.getValue('grouped_label'))}
-                  >
-                    {row.getVisibleCells().map((cell, index) => (
-                      <TableCell 
-                        key={cell.id} 
-                        className={`whitespace-nowrap ${
-                          index === 0 
-                            ? 'sticky left-0 z-10 border-r bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' 
-                            : ''
-                        }`}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
+      <div className="bg-white rounded-lg shadow-lg mb-6">
+        <div className={`p-4 ${isMobile ? 'pb-2' : 'p-4'} border-b`}>
+          <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold`}>
+            Rich Wallet Changes
+          </h2>
+          <p className={`text-sm text-gray-500 ${isMobile ? 'mt-0.5' : 'mt-1'}`}>
+            Balance changes and wallet count by label
+          </p>
+        </div>
+        <div className={`rounded-md border ${isMobile ? 'mx-2 my-2' : 'm-4'}`}>
+          <div className="overflow-x-auto relative">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header, index) => {
+                      return (
+                        <TableHead 
+                          key={header.id} 
+                          className={`whitespace-nowrap ${
+                            index === 0 
+                              ? 'sticky left-0 z-10 border-r bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' 
+                              : ''
+                          }`}
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      )
+                    })}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="group relative cursor-pointer"
+                      onClick={() => handleRowClick(row.getValue('grouped_label'))}
+                    >
+                      {row.getVisibleCells().map((cell, index) => (
+                        <TableCell 
+                          key={cell.id} 
+                          className={`whitespace-nowrap ${
+                            index === 0 
+                              ? 'sticky left-0 z-10 border-r bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' 
+                              : ''
+                          }`}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
       <WalletBalanceChart

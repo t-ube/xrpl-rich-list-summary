@@ -5,8 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 const Disclaimer = () => {
   return (
     <Card className="mb-8 bg-slate-50">
-      <CardContent className="pt-6">
-        <Alert className="mb-4">
+      <CardContent className="pt-0">
+        <Alert className="mb-0">
           <AlertDescription className="text-sm text-muted-foreground">
             <div className="space-y-2">
               <p>
