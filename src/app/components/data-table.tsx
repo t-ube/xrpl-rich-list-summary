@@ -19,7 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ArrowUpDown } from 'lucide-react'
-import { ExchangeIcon } from './exchange-icon'
+import { CloudinaryExchangeIcon } from './cloudinary-exchange-icon'
 import WalletBalanceChart from '@/app/components/wallet-balance-chart'
 
 
@@ -142,7 +142,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
         const label = row.getValue('grouped_label') as string
         return (
           <div className="flex items-center gap-2 bg-white">
-            <ExchangeIcon exchange={label} />
+            <CloudinaryExchangeIcon exchange={label} />
             <span className="font-medium">
               {isMobile ? (label.length > 10 ? `${label.slice(0, 8)}...` : label) : label}
             </span>
