@@ -17,7 +17,7 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto px-2 py-8">
-      <h1 className="text-3xl font-bold mb-8">XRP Rich List Summary</h1>
+      <h1 className="text-3xl font-bold pl-2 mb-8">XRP Rich List Summary</h1>
       <Disclaimer />
       <LastUpdated data={summaries || []} />
       <CryptoTreemap data={summaries || []} />
