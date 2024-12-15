@@ -12,6 +12,7 @@ export default async function Home() {
   const { data: summaries } = await supabase
     .from('xrpl_rich_list_summary_with_changes')
     .select('*, created_at')
+    .gte('total_xrp', 1000)
     .order('total_xrp', { ascending: false })
 
   return (

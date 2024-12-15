@@ -10,19 +10,31 @@ const Disclaimer = () => {
           <AlertDescription className="text-sm text-muted-foreground">
             <div className="space-y-2">
               <p>
-                <span className="font-semibold">Data Source:</span> All data is sourced from{' '}
+                <span className="font-semibold">Data Source:</span> Data is retrieved through{' '}
                 <a 
-                  href="https://xrpscan.com/balances" 
+                  href="https://xrpscan.com/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline"
                 >
-                  xrpscan.com/balances
+                  xrpscan.com
                 </a>
+                <span> and XRPL APIs</span>
               </p>
               
               <p>
-                <span className="font-semibold">Coverage:</span> This summary is based on the top 10,000 wallets from XRPScan&apos;s balance list.
+                <span className="font-semibold">Coverage:</span>
+                <span> Analysis covers Well-known accounts and {' '}
+                  <a 
+                    href="https://xrpscan.com/balances" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    XRP rich list accounts
+                  </a>
+                  .
+                </span>
               </p>
               
               <p>
