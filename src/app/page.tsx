@@ -2,7 +2,8 @@
 import { supabase } from '@/app/lib/supabase'
 import DataTable from './components/data-table'
 import Disclaimer from './components/disclaimer'
-import CryptoTreemap from './components/crypto-treemap'
+//import CryptoTreemap from './components/crypto-treemap'
+import CryptoTreemap from './components/crypto-treemap-apexcharts'
 import LastUpdated from './components/last-updated'
 
 
