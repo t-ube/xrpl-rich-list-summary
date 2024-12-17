@@ -1,20 +1,20 @@
 // src/app/page.tsx
 import { supabase } from '@/app/lib/supabase'
-import DataTable from './components/data-table'
-import Disclaimer from './components/disclaimer'
-//import CryptoTreemap from './components/crypto-treemap'
-import CryptoTreemap from './components/crypto-treemap-apexcharts'
-import LastUpdated from './components/last-updated'
+import DataTable from '@/app/components/data-table'
+import Disclaimer from '@/app/components/disclaimer'
+//import CryptoTreemap from '@/app/components/crypto-treemap'
+import CryptoTreemap from '@/app/components/crypto-treemap-apexcharts'
+import LastUpdated from '@/app/components/last-updated'
 
 
 export const revalidate = 3600
 
 export default async function Home() {
   const { data: summaries } = await supabase
-    .from('xrpl_rich_list_summary_with_changes')
-    .select('*, created_at')
-    .gte('total_xrp', 1000)
-    .order('total_xrp', { ascending: false })
+  .from('xrpl_rich_list_summary_with_total_changes')
+  .select('*, created_at')
+  .gte('show_total_xrp', 1000)
+  .order('show_total_xrp', { ascending: false })
 
   return (
     <main className="container mx-auto px-2 py-8">

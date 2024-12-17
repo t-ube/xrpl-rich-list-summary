@@ -13,11 +13,18 @@ interface RichListSummaryWithChanges {
   total_balance: number;
   total_escrow: number;
   total_xrp: number;
-  created_at: string;
-  change_1h: number | null;
-  percentage_1h: number | null;
-  change_24h: number | null;
-  percentage_24h: number | null;
+  show_total_xrp: number;
+  change_1h: number | null
+  percentage_1h: number | null
+  change_3h: number | null
+  percentage_3h: number | null
+  change_24h: number | null
+  percentage_24h: number | null
+  change_168h: number | null
+  percentage_168h: number | null
+  change_720h: number | null
+  percentage_720h: number | null
+  created_at: string
 }
 
 interface TreemapDataItem {
@@ -25,7 +32,7 @@ interface TreemapDataItem {
   y: number;
   fillColor: string;
   percentage: number;
-  total_xrp: number;
+  show_total_xrp: number;
   foreColor?: string;
 }
 
@@ -41,7 +48,9 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
     return '#047857';
   };
   const transformData = React.useMemo<TreemapDataItem[]>(() => {
-    const totalSize = data.reduce((sum, item) => sum + item.total_xrp, 0);
+    if (!data || data.length === 0) return [];
+
+    const totalSize = data.reduce((sum, item) => sum + item.show_total_xrp, 0);
     const threshold = totalSize * 0.00001;
     
     const mainData: TreemapDataItem[] = [];
@@ -49,16 +58,16 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
     let othersCount = 0;
 
     data.forEach(item => {
-      if (item.total_xrp >= threshold) {
+      if (item.show_total_xrp >= threshold) {
         mainData.push({
           x: item.grouped_label,
-          y: item.total_xrp,
+          y: item.show_total_xrp,
           fillColor: getColor(item.percentage_24h || 0),
           percentage: item.percentage_24h || 0,
-          total_xrp: item.total_xrp
+          show_total_xrp: item.show_total_xrp
         });
       } else {
-        othersSize += item.total_xrp;
+        othersSize += item.show_total_xrp;
         othersCount++;
       }
     });
@@ -69,7 +78,7 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
         y: othersSize,
         fillColor: '#90A4AE',
         percentage: 0,
-        total_xrp: othersSize
+        show_total_xrp: othersSize
       });
     }
 
@@ -79,25 +88,12 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
   const options: ApexOptions = {
     chart: {
       type: 'treemap',
-      height: 600,
+      height: 550,
       toolbar: {
         show: false
-      }
-    },
-    title: {
-      text: 'Wallet Balance Distribution (24h)',
-      align: 'left',
-      style: {
-        fontSize: '20px',
-        fontWeight: '600'
-      }
-    },
-    subtitle: {
-      text: 'Size represents total balance, color indicates 24-hour change',
-      align: 'left',
-      style: {
-        fontSize: '14px',
-        color: '#64748b'
+      },
+      animations: {
+        enabled: false
       }
     },
     dataLabels: {
@@ -146,7 +142,7 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
                 style: 'currency',
                 currency: 'XRP',
                 minimumFractionDigits: 0,
-              }).format(dataPoint.total_xrp)}
+              }).format(dataPoint.show_total_xrp)}
             </div>
             <div class="text-sm">
               ${getPercentageSymbol(dataPoint.percentage)} ${getPercentageDisplay(dataPoint.percentage)}
@@ -157,9 +153,17 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
     }
   };
 
+  if (!data || data.length === 0) {
+    return <div>No data available</div>
+  }
+
   return (
     <div className="w-full bg-white rounded-lg shadow-lg">
-      <div className="h-[600px] p-4">
+      <div className="p-4 pb-0">
+        <h2 className="text-xl font-semibold">Wallet Balance Distribution (24h)</h2>
+        <p className="text-sm text-gray-500">Size represents total balance, color indicates 24-hour change</p>
+      </div>
+      <div className="h-[550px] px-4 pb-4">
         <Chart
           options={options}
           series={[{

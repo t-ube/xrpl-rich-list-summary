@@ -24,10 +24,13 @@ import WalletBalanceChart from '@/app/components/wallet-balance-chart'
 
 
 interface Summary {
-  id: number
-  grouped_label: string
-  count: number
-  total_xrp: number
+  id: number;
+  grouped_label: string;
+  count: number;
+  total_balance: number;
+  total_escrow: number;
+  total_xrp: number;
+  show_total_xrp: number;
   change_1h: number | null
   percentage_1h: number | null
   change_3h: number | null
@@ -154,7 +157,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
       },
     },
     {
-      accessorKey: 'total_xrp',
+      accessorKey: 'show_total_xrp',
       header: ({ column }) => {
         return (
           <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
@@ -165,7 +168,7 @@ export default function DataTable({ data }: { data: Summary[] }) {
       },
       cell: ({ row }) => (
         <div className="text-right font-medium">
-          {Math.round(row.getValue<number>('total_xrp')).toLocaleString()}
+          {Math.round(row.getValue<number>('show_total_xrp')).toLocaleString()}
           {!isMobile && ' XRP'}
         </div>
       ),
