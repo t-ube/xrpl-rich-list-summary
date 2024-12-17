@@ -91,8 +91,10 @@ const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; p
   const color = isPositive ? 'text-green-600' : 'text-red-600'
   const sign = isPositive ? '+' : ''
 
-  const getRoundedPercentage = (percentage: number) => {
-    return Math.round(percentage * 100) / 100;
+  const getPercentageDisplay = (percentage: number) => {
+    if (percentage === 0) return '0%';
+    if (Math.abs(percentage) < 0.01) return percentage > 0 ? '<+0.01%' : '<-0.01%';
+    return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
   };
 
   return (
@@ -100,7 +102,7 @@ const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; p
       {sign}{roundedChange.toLocaleString()} {!isMobile && ' XRP'}
       <br />
       <span className="text-sm">
-        ({sign}{getRoundedPercentage(percentage)}%)
+        ({getPercentageDisplay(percentage)})
       </span>
     </span>
   )

@@ -136,8 +136,10 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
           if (percentage === 0) return '→';
           return percentage > 0 ? '↑' : '↓';
         };
-        const getRoundedPercentage = (percentage: number) => {
-            return Math.round(percentage * 100) / 100;
+        const getPercentageDisplay = (percentage: number) => {
+          if (percentage === 0) return '0%';
+          if (Math.abs(percentage) < 0.01) return percentage > 0 ? '<+0.01%' : '<-0.01%';
+          return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
         };
 
         return `
@@ -151,7 +153,7 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
               }).format(dataPoint.total_xrp)}
             </div>
             <div class="text-sm">
-              ${getPercentageSymbol(dataPoint.percentage)} ${Math.abs(getRoundedPercentage(dataPoint.percentage))}%
+              ${getPercentageSymbol(dataPoint.percentage)} ${getPercentageDisplay(dataPoint.percentage)}
             </div>
           </div>
         `;
