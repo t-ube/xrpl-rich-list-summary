@@ -26,22 +26,20 @@ interface TreemapDataItem {
   fillColor: string;
   percentage: number;
   total_xrp: number;
+  foreColor?: string;
 }
 
 const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data }) => {
   const getColor = (percentage: number): string => {
     const roundedPercentage = percentage;
-    if (roundedPercentage <= -12) return '#991B1B';
-    if (roundedPercentage <= -7) return '#B91C1C';
-    if (roundedPercentage <= -3) return '#DC2626';
+    if (roundedPercentage <= -7) return '#991B1B';
+    if (roundedPercentage <= -1) return '#DC2626';
     if (roundedPercentage < 0) return '#EF5350';
     if (roundedPercentage === 0) return '#90A4AE';
-    if (roundedPercentage < 3) return '#059669';
-    if (roundedPercentage < 7) return '#047857';
-    if (roundedPercentage < 12) return '#065F46';
-    return '#064E3B';
+    if (roundedPercentage < 1) return '#4DD8A3';
+    if (roundedPercentage < 7) return '#0EB784';
+    return '#047857';
   };
-
   const transformData = React.useMemo<TreemapDataItem[]>(() => {
     const totalSize = data.reduce((sum, item) => sum + item.total_xrp, 0);
     const threshold = totalSize * 0.00001;
@@ -116,15 +114,13 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
         enableShades: false,
         colorScale: {
           ranges: [
-            { from: Number.NEGATIVE_INFINITY, to: -12, color: '#991B1B' },
-            { from: -12, to: -7, color: '#B91C1C' },
-            { from: -7, to: -3, color: '#DC2626' },
-            { from: -3, to: 0, color: '#EF5350' },
+            { from: Number.NEGATIVE_INFINITY, to: -7, color: '#991B1B' },
+            { from: -7, to: -1, color: '#DC2626' },
+            { from: -1, to: 0, color: '#EF5350' },
             { from: 0, to: 0, color: '#90A4AE' },
-            { from: 0, to: 3, color: '#059669' },
-            { from: 3, to: 7, color: '#047857' },
-            { from: 7, to: 12, color: '#065F46' },
-            { from: 12, to: Number.POSITIVE_INFINITY, color: '#064E3B' }
+            { from: 0, to: 1, color: '#4DD8A3' },
+            { from: 1, to: 7, color: '#0EB784' },
+            { from: 7, to: Number.POSITIVE_INFINITY, color: '#047857' }
           ]
         }
       }
