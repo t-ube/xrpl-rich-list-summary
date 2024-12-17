@@ -66,40 +66,41 @@ const createChangeSortingFn = (columnId: string) => (rowA: Row<Summary>, rowB: R
   
   function isEffectiveZero(change: number | null, percentage: number | null) {
     if (!change || !percentage) return true
-    return Math.round(change) === 0 || Math.round(percentage) === 0
+    return Math.abs(change) < 0.00001 || Math.abs(percentage) < 0.00001
   }
 
-  const aRounded = aChange ? Math.round(aChange) : 0
-  const bRounded = bChange ? Math.round(bChange) : 0
-  
   const aIsZero = isEffectiveZero(aChange, aPercentage)
   const bIsZero = isEffectiveZero(bChange, bPercentage)
 
-  if (aIsZero && !bIsZero) return bRounded < 0 ? 1 : -1
-  if (!aIsZero && bIsZero) return aRounded < 0 ? -1 : 1
+  if (aIsZero && !bIsZero) return bChange! < 0 ? 1 : -1
+  if (!aIsZero && bIsZero) return aChange! < 0 ? -1 : 1
   if (aIsZero && bIsZero) return 0
   
-  return aRounded - bRounded
+  return (aChange || 0) - (bChange || 0)
 }
 
 const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; percentage: number | null; isMobile: boolean }) => {
   if (!change || !percentage) return <span>-</span>
   
   const roundedChange = Math.round(change)
-  const roundedPercentage = Math.round(percentage)
+  //const roundedPercentage = Math.round(percentage)
 
-  if (roundedChange === 0 || roundedPercentage === 0) return <span>-</span>
+  if (roundedChange === 0 || percentage === 0) return <span>-</span>
   
   const isPositive = roundedChange > 0
   const color = isPositive ? 'text-green-600' : 'text-red-600'
   const sign = isPositive ? '+' : ''
+
+  const getRoundedPercentage = (percentage: number) => {
+    return Math.round(percentage * 100) / 100;
+  };
 
   return (
     <span className={color}>
       {sign}{roundedChange.toLocaleString()} {!isMobile && ' XRP'}
       <br />
       <span className="text-sm">
-        ({sign}{roundedPercentage}%)
+        ({sign}{getRoundedPercentage(percentage)}%)
       </span>
     </span>
   )
