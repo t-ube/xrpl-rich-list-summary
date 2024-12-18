@@ -46,6 +46,13 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isOpen) {
+      setData([]);
+      setError(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (isOpen && walletLabel) {
       setLoading(true);
       setError(null);
@@ -59,7 +66,7 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
           const combinedData = walletData.map((item) => {
             const timestamp = new Date(item.time).getTime();
             const matchingPrice = priceData?.find((p) => 
-              Math.abs(new Date(p.timestamp).getTime() - timestamp) < 3600000 // 1時間以内
+              Math.abs(new Date(p.timestamp).getTime() - timestamp) < 1800000 // 30分以内（1800000ミリ秒）
             );
 
             return {
