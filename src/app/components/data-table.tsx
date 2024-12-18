@@ -21,7 +21,7 @@ import {
 import { ArrowUpDown } from 'lucide-react'
 import { CloudinaryExchangeIcon } from './cloudinary-exchange-icon'
 import WalletBalanceChart from '@/app/components/wallet-balance-chart'
-
+//import WalletBalanceAndPirceChart from '@/app/components/wallet-balance-and-price-chart'
 
 interface Summary {
   id: number;
@@ -67,9 +67,12 @@ const createChangeSortingFn = (columnId: string) => (rowA: Row<Summary>, rowB: R
   const aPercentage = rowA.original[percentageKey] as number | null
   const bPercentage = rowB.original[percentageKey] as number | null
   
+  const CHANGE_THRESHOLD = 0.001 // 0.001 XRP未満の変化は0として扱う
+  const PERCENTAGE_THRESHOLD = 0.001 // 0.001%未満の変化も0として扱う
+
   function isEffectiveZero(change: number | null, percentage: number | null) {
     if (!change || !percentage) return true
-    return Math.abs(change) < 0.00001 || Math.abs(percentage) < 0.00001
+    return Math.abs(change) < CHANGE_THRESHOLD || Math.abs(percentage) < PERCENTAGE_THRESHOLD
   }
 
   const aIsZero = isEffectiveZero(aChange, aPercentage)
@@ -85,24 +88,25 @@ const createChangeSortingFn = (columnId: string) => (rowA: Row<Summary>, rowB: R
 const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; percentage: number | null; isMobile: boolean }) => {
   if (!change || !percentage) return <span>-</span>
   
-  const roundedChange = Math.round(change)
-  //const roundedPercentage = Math.round(percentage)
+  const CHANGE_THRESHOLD = 0.001
+  const PERCENTAGE_THRESHOLD = 0.001
 
-  if (roundedChange === 0 || percentage === 0) return <span>-</span>
+  const isEffectiveZero = Math.abs(change) < CHANGE_THRESHOLD || Math.abs(percentage) < PERCENTAGE_THRESHOLD
+  if (isEffectiveZero) return <span>-</span>
   
-  const isPositive = roundedChange > 0
+  const isPositive = change > 0
   const color = isPositive ? 'text-green-600' : 'text-red-600'
   const sign = isPositive ? '+' : ''
 
   const getPercentageDisplay = (percentage: number) => {
-    if (percentage === 0) return '0%';
-    if (Math.abs(percentage) < 0.01) return percentage > 0 ? '<+0.01%' : '<-0.01%';
-    return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
-  };
+    if (Math.abs(percentage) < PERCENTAGE_THRESHOLD) return '0%'
+    if (Math.abs(percentage) < 0.01) return percentage > 0 ? '<+0.01%' : '<-0.01%'
+    return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`
+  }
 
   return (
     <span className={color}>
-      {sign}{roundedChange.toLocaleString()} {!isMobile && ' XRP'}
+      {sign}{Math.round(change).toLocaleString()} {!isMobile && ' XRP'}
       <br />
       <span className="text-sm">
         ({getPercentageDisplay(percentage)})

@@ -37,16 +37,21 @@ interface TreemapDataItem {
 }
 
 const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data }) => {
+  const CHANGE_THRESHOLD = 0.001; // 0.001 XRP未満の変化は0として扱う
+
   const getColor = (percentage: number): string => {
-    const roundedPercentage = percentage;
-    if (roundedPercentage <= -7) return '#991B1B';
-    if (roundedPercentage <= -1) return '#DC2626';
-    if (roundedPercentage < 0) return '#EF5350';
-    if (roundedPercentage === 0) return '#90A4AE';
-    if (roundedPercentage < 1) return '#4DD8A3';
-    if (roundedPercentage < 7) return '#0EB784';
+    // 閾値未満の変化は0として扱う
+    const effectivePercentage = Math.abs(percentage) < CHANGE_THRESHOLD ? 0 : percentage;
+    
+    if (effectivePercentage <= -7) return '#991B1B';
+    if (effectivePercentage <= -1) return '#DC2626';
+    if (effectivePercentage < 0) return '#EF5350';
+    if (effectivePercentage === 0) return '#90A4AE';
+    if (effectivePercentage < 1) return '#4DD8A3';
+    if (effectivePercentage < 7) return '#0EB784';
     return '#047857';
   };
+
   const transformData = React.useMemo<TreemapDataItem[]>(() => {
     if (!data || data.length === 0) return [];
 
@@ -58,12 +63,17 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
     let othersCount = 0;
 
     data.forEach(item => {
+      // 変化量が閾値未満の場合は0として扱う
+      const effectivePercentage = Math.abs(item.percentage_24h || 0) < CHANGE_THRESHOLD 
+        ? 0 
+        : (item.percentage_24h || 0);
+
       if (item.show_total_xrp >= threshold) {
         mainData.push({
           x: item.grouped_label,
           y: item.show_total_xrp,
-          fillColor: getColor(item.percentage_24h || 0),
-          percentage: item.percentage_24h || 0,
+          fillColor: getColor(effectivePercentage),
+          percentage: effectivePercentage,
           show_total_xrp: item.show_total_xrp
         });
       } else {
@@ -125,10 +135,12 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
       custom: function({ seriesIndex, dataPointIndex, w }) {
         const dataPoint = w.config.series[seriesIndex].data[dataPointIndex];
         const getPercentageSymbol = (percentage: number) => {
+          if (Math.abs(percentage) < CHANGE_THRESHOLD) return '→';
           if (percentage === 0) return '→';
           return percentage > 0 ? '↑' : '↓';
         };
         const getPercentageDisplay = (percentage: number) => {
+          if (Math.abs(percentage) < CHANGE_THRESHOLD) return '0%';
           if (percentage === 0) return '0%';
           if (Math.abs(percentage) < 0.01) return percentage > 0 ? '<+0.01%' : '<-0.01%';
           return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
