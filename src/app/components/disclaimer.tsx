@@ -19,9 +19,17 @@ const Disclaimer = () => {
                 >
                   xrpscan.com
                 </a>
-                <span> and XRPL APIs</span>
+                <span> and XRPL APIs and </span>
+                <a 
+                  href="https://data.xrplf.org/docs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  XRPL Data API
+                </a>
+                <span>.</span>
               </p>
-              
               <p>
                 <span className="font-semibold">Coverage:</span>
                 <span> Analysis covers Well-known accounts and {' '}

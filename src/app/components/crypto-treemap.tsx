@@ -2,20 +2,7 @@
 
 import React from 'react';
 import { Treemap, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
-
-interface RichListSummaryWithChanges {
-  id: number;
-  grouped_label: string;
-  count: number;
-  total_balance: number;
-  total_escrow: number;
-  total_xrp: number;
-  created_at: string;
-  change_1h: number | null;
-  percentage_1h: number | null;
-  change_24h: number | null;
-  percentage_24h: number | null;
-}
+import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
 
 interface TreemapDataItem {
   name: string;

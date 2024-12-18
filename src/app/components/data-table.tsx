@@ -20,28 +20,14 @@ import {
 } from '@/components/ui/table'
 import { ArrowUpDown } from 'lucide-react'
 import { CloudinaryExchangeIcon } from './cloudinary-exchange-icon'
-import WalletBalanceChart from '@/app/components/wallet-balance-chart'
-//import WalletBalanceAndPirceChart from '@/app/components/wallet-balance-and-price-chart'
+//import WalletBalanceChart from '@/app/components/wallet-balance-chart'
+import WalletBalanceAndPriceChart from '@/app/components/wallet-balance-and-price-chart'
+import { MarketDataResponse } from '@/types/market-data'
+import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
 
-interface Summary {
-  id: number;
-  grouped_label: string;
-  count: number;
-  total_balance: number;
-  total_escrow: number;
-  total_xrp: number;
-  show_total_xrp: number;
-  change_1h: number | null
-  percentage_1h: number | null
-  change_3h: number | null
-  percentage_3h: number | null
-  change_24h: number | null
-  percentage_24h: number | null
-  change_168h: number | null
-  percentage_168h: number | null
-  change_720h: number | null
-  percentage_720h: number | null
-  created_at: string
+interface DataTableProps {
+  data: RichListSummaryWithChanges[];
+  priceData: MarketDataResponse[] | null;
 }
 
 // 型定義の拡張
@@ -58,7 +44,7 @@ const percentageKeyMap: Record<ChangeKeys, PercentageKeys> = {
 }
 
 // 共通のソート関数
-const createChangeSortingFn = (columnId: string) => (rowA: Row<Summary>, rowB: Row<Summary>) => {
+const createChangeSortingFn = (columnId: string) => (rowA: Row<RichListSummaryWithChanges>, rowB: Row<RichListSummaryWithChanges>) => {
   const changeKey = columnId as ChangeKeys
   const percentageKey = percentageKeyMap[changeKey]
   
@@ -132,12 +118,12 @@ const useIsMobile = () => {
   return isMobile
 }
 
-export default function DataTable({ data }: { data: Summary[] }) {
+export default function DataTable({ data, priceData }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const isMobile = useIsMobile()
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
 
-  const columns: ColumnDef<Summary>[] = [
+  const columns: ColumnDef<RichListSummaryWithChanges>[] = [
     {
       accessorKey: 'grouped_label',
       header: ({ column }) => {
@@ -361,12 +347,14 @@ export default function DataTable({ data }: { data: Summary[] }) {
           </div>
         </div>
       </div>
-      <WalletBalanceChart
+      <WalletBalanceAndPriceChart
         walletLabel={selectedWallet || ''}
         isOpen={!!selectedWallet}
         onClose={() => setSelectedWallet(null)}
         isMobile={isMobile}
+        priceData={priceData}
       />
     </div>
   )
 }
+

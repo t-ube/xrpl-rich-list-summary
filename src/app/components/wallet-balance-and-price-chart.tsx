@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { X } from 'lucide-react';
 import { ExchangeIcon } from './exchange-icon'
 
@@ -26,24 +26,20 @@ interface MarketDataResponse {
   timestamp: string;
 }
 
-// priceデータの型を定義
-interface PriceData extends MarketDataResponse {
-  exchanges: number;
-  timestamp: string;
-}
-
-interface WalletBalanceChartProps {
+interface WalletBalanceAndPriceChartProps {
   walletLabel: string;
   isOpen: boolean;
   onClose: () => void;
   isMobile: boolean;
+  priceData: MarketDataResponse[] | null;
 }
 
-const WalletBalanceAndPirceChart: React.FC<WalletBalanceChartProps> = ({
+const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
   walletLabel,
   isOpen,
   onClose,
-  isMobile
+  isMobile,
+  priceData
 }) => {
   const [data, setData] = useState<TimeSeriesData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,43 +49,21 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceChartProps> = ({
     if (isOpen && walletLabel) {
       setLoading(true);
       setError(null);
-
-      // 7日前の日時を取得
-      const end = new Date();
-      const start = new Date();
-      start.setDate(start.getDate() - 7);
-
-      const startTime = start.toISOString();
-      const endTime = end.toISOString();
-
-      /*
-      const issuer = 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De';
-      const currency = '524C555344000000000000000000000000000000';
-      */
-      const issuer = 'rcEGREd8NmkKRE8GE424sksyt1tJVFZwu';
-      const currency = '5553444300000000000000000000000000000000';
-      const marketDataUrl = `https://data.xrplf.org/v1/iou/market_data/XRP/${issuer}_${currency}?interval=1h&start=${startTime}&end=${endTime}&descending=true&limit=720`;
       
-      Promise.all([
-        fetch(`/api/time-series/${encodeURIComponent(walletLabel)}`),
-        fetch(marketDataUrl)
-      ])
-        .then(async ([walletRes, priceRes]) => {
-          if (!walletRes.ok || !priceRes.ok) throw new Error('Failed to fetch data');
-          
+      fetch(`/api/time-series/${encodeURIComponent(walletLabel)}`)
+        .then(async (walletRes) => {
+          if (!walletRes.ok) throw new Error('Failed to fetch data');
           const walletData = await walletRes.json() as TimeSeriesData[];
-          const priceData = await priceRes.json() as PriceData[];
           
           // データの結合と精度の処理
           const combinedData = walletData.map((item) => {
             const timestamp = new Date(item.time).getTime();
-            const matchingPrice = priceData.find((p) => 
+            const matchingPrice = priceData?.find((p) => 
               Math.abs(new Date(p.timestamp).getTime() - timestamp) < 3600000 // 1時間以内
             );
 
             return {
               ...item,
-              // closeプロパティを使用し、数値の精度を保持
               price: matchingPrice?.close ?? null
             };
           });
@@ -102,8 +76,8 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceChartProps> = ({
         })
         .finally(() => setLoading(false));
     }
-  }, [walletLabel, isOpen]);
-
+  }, [walletLabel, isOpen, priceData]);
+  
   const slideClass = isMobile
     ? `fixed bottom-0 left-0 right-0 h-[70vh] transform transition-transform duration-300 ease-in-out border-t border-gray-200 ${
         isOpen ? 'translate-y-0' : 'translate-y-full'
@@ -156,11 +130,17 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceChartProps> = ({
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart 
+              <ComposedChart 
                 data={data}
-                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                margin={{ top: 5, right: 0, left: 0, bottom: 30 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <defs>
+                  <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0.01} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
                 <XAxis 
                   dataKey="time"
                   tickFormatter={formatXAxis}
@@ -168,15 +148,18 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceChartProps> = ({
                   textAnchor="end"
                   height={60}
                   interval="preserveStartEnd"
+                  stroke="#666"
                 />
                 <YAxis 
                   yAxisId="left"
                   tickFormatter={(value) => (
                     new Intl.NumberFormat('en-US', {
                       notation: 'compact',
-                      compactDisplay: 'short'
+                      compactDisplay: 'short',
+                      maximumFractionDigits: 1
                     }).format(value)
                   )}
+                  stroke="#2563eb"
                 />
                 <YAxis 
                   yAxisId="right"
@@ -184,6 +167,7 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceChartProps> = ({
                   tickFormatter={(value) => (
                     `$${value.toFixed(2)}`
                   )}
+                  stroke="#666"
                 />
                 <Tooltip 
                   formatter={(value: number, name: string) => {
@@ -193,29 +177,42 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceChartProps> = ({
                     return [`$${value.toFixed(3)}`, name];
                   }}
                   labelFormatter={formatXAxis}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '1px solid #f0f0f0'
+                  }}
                 />
-                <Legend />
-                <Line
+                <Legend 
+                  verticalAlign="top"
+                  height={36}
+                  wrapperStyle={{
+                    top: 0,
+                    paddingBottom: '10px'
+                  }}
+                  iconType="circle"
+                />
+                <Area
                   yAxisId="left"
                   type="monotone"
                   dataKey="value"
-                  name="XRP Balance"
+                  name="Balance"
+                  fill="url(#balanceGradient)"
                   stroke="#2563eb"
                   strokeWidth={2}
                   dot={false}
-                  activeDot={{ r: 6 }}
+                  activeDot={{ r: 4 }}
                 />
                 <Line
                   yAxisId="right"
                   type="monotone"
                   dataKey="price"
-                  name="XRP Price"
-                  stroke="#10b981"
-                  strokeWidth={2}
+                  name="Price"
+                  stroke="#666"
+                  strokeWidth={1}
                   dot={false}
-                  activeDot={{ r: 6 }}
+                  activeDot={{ r: 4 }}
                 />
-              </LineChart>
+              </ComposedChart>
             </ResponsiveContainer>
           )}
         </div>
