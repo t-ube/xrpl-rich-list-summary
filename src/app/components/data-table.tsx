@@ -53,7 +53,7 @@ const createChangeSortingFn = (columnId: string) => (rowA: Row<RichListSummaryWi
   const aPercentage = rowA.original[percentageKey] as number | null
   const bPercentage = rowB.original[percentageKey] as number | null
   
-  const CHANGE_THRESHOLD = 0.001 // 0.001 XRP未満の変化は0として扱う
+  const CHANGE_THRESHOLD = 1.0 // 1.0 XRP未満の変化は0として扱う
   const PERCENTAGE_THRESHOLD = 0.001 // 0.001%未満の変化も0として扱う
 
   function isEffectiveZero(change: number | null, percentage: number | null) {
@@ -74,7 +74,7 @@ const createChangeSortingFn = (columnId: string) => (rowA: Row<RichListSummaryWi
 const ChangeCell = ({ change, percentage, isMobile }: { change: number | null; percentage: number | null; isMobile: boolean }) => {
   if (!change || !percentage) return <span>-</span>
   
-  const CHANGE_THRESHOLD = 0.001
+  const CHANGE_THRESHOLD = 1.0
   const PERCENTAGE_THRESHOLD = 0.001
 
   const isEffectiveZero = Math.abs(change) < CHANGE_THRESHOLD || Math.abs(percentage) < PERCENTAGE_THRESHOLD
