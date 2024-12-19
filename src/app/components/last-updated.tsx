@@ -24,7 +24,7 @@ const LastUpdated: React.FC<LastUpdatedProps> = ({ data }) => {
   const date = new Date(latestTimestamp);
 
   return (
-    <div className="text-sm text-gray-500 mb-4 text-right">
+    <div className="text-sm text-gray-500 mb-4 mr-2 text-right">
       Last updated: {formatDate(date)}
     </div>
   );

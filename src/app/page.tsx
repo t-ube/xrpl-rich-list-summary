@@ -1,7 +1,7 @@
 // src/app/page.tsx
 import { supabase } from '@/app/lib/supabase'
 import DataTable from '@/app/components/data-table'
-import Disclaimer from '@/app/components/disclaimer'
+import SlimDisclaimer from '@/app/components/disclaimer-slim'
 import CryptoTreemap from '@/app/components/crypto-treemap-apexcharts'
 import LastUpdated from '@/app/components/last-updated'
 import { MarketDataResponse } from '@/types/market-data'
@@ -49,7 +49,7 @@ export default async function Home() {
   return (
     <main className="container mx-auto px-2 py-8">
       <h1 className="text-3xl font-bold pl-2 mb-8">XRP Rich List Summary</h1>
-      <Disclaimer />
+      <SlimDisclaimer />
       <LastUpdated data={summaries || []} />
       <CryptoTreemap data={summaries || []} />
       <div className="mt-8">

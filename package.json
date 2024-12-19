@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-collapsible": "^1.1.2",
+    "@radix-ui/react-slot": "^1.1.1",
     "@supabase/supabase-js": "^2.46.2",
     "@tanstack/react-table": "^8.20.5",
     "apexcharts": "^4.2.0",
