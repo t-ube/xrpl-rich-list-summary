@@ -1,5 +1,6 @@
 // app/api/og/cloudinary/route.ts
 import { NextResponse } from 'next/server'
+import { v2 as cloudinary } from 'cloudinary'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
@@ -9,45 +10,29 @@ interface CloudinaryResource {
   secure_url: string
 }
 
-interface CloudinarySearchResponse {
-  resources: CloudinaryResource[]
-}
-
-interface CloudinaryUploadResponse extends CloudinaryResource {
-  format: string
-}
-
 interface SignatureParams {
   [key: string]: string | number | boolean
 }
 
 const FOLDER_NAME = 'xrp-rich-list-summary/og'
 
-async function generateSignature(params: SignatureParams, apiSecret: string): Promise<string> {
-  // パラメータをソート
-  const sortedKeys = Object.keys(params).sort()
-  
-  // パラメータを文字列に変換
-  const stringToSign = sortedKeys
-    .map(key => `${key}=${params[key]}`)
-    .join('&') + apiSecret
-
-  // SHA-1ハッシュを生成
-  const hashBuffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(stringToSign))
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
 export async function GET() {
   try {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
     const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
-    const apiSecret = process.env.NEXT_PUBLIC_CLOUDINARY_API_SECRET
+    const apiSecret = process.env.CLOUDINARY_API_SECRET
 
     if (!siteUrl || !cloudName || !apiKey || !apiSecret) {
+      console.error('Error: Missing environment variables')
       throw new Error('Missing environment variables')
     }
+
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+    })
 
     // OG画像のURLを生成
     const ogImageUrl = `${siteUrl}/api/og`
@@ -58,93 +43,29 @@ export async function GET() {
     const timestamp = Math.floor(Date.now() / 1000)
 
     // アップロードパラメータ
-    const uploadParams: SignatureParams = {
+    const params: SignatureParams = {
       public_id: filename,
       folder: FOLDER_NAME,
       overwrite: true,
-      timestamp,
-      api_key: apiKey,
+      timestamp: timestamp,
     }
 
-    const signature = await generateSignature(uploadParams, apiSecret)
-
-    // FormDataの作成
-    const formData = new FormData()
-    formData.append('file', ogImageUrl)
-    formData.append('api_key', apiKey)
-    formData.append('timestamp', timestamp.toString())
-    formData.append('signature', signature)
-    formData.append('folder', FOLDER_NAME)
-    formData.append('public_id', filename)
-    formData.append('overwrite', 'true')
-
     // Cloudinaryへアップロード
-    const uploadResponse = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    ).then(res => {
-      if (!res.ok) {
-        console.error('Error uploading to Cloudinary:', res.status, res.statusText)
-        throw new Error(`Failed to upload image to Cloudinary: ${res.status} ${res.statusText}`)
-      }
-      return res.json()
-    }) as CloudinaryUploadResponse
+    const uploadResponse = await cloudinary.uploader.upload(ogImageUrl, params)
 
     // 古い画像の削除は非同期で行う
-    fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/resources/search`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${btoa(`${apiKey}:${apiSecret}`)}`,
-        },
-        body: JSON.stringify({
-          expression: `folder:${FOLDER_NAME} AND resource_type:image`,
-          sort_by: [{ created_at: 'desc' }],
-          max_results: 30,
-        }),
-      }
-    )
-    .then(res => {
-      if (!res.ok) {
-        console.error('Error searching images on Cloudinary:', res.status, res.statusText)
-        throw new Error(`Failed to search images on Cloudinary: ${res.status} ${res.statusText}`)
-      }
-      return res.json() as Promise<CloudinarySearchResponse>
+    cloudinary.api.resources({
+      type: 'upload',
+      prefix: FOLDER_NAME,
+      max_results: 100,
     })
-    .then(({ resources }) => {
+    .then(result => {
+      const resources = result.resources
       // 現在のファイル以外の古い画像を削除
-      return Promise.all(
-        resources
-          .filter(image => image.public_id !== `${FOLDER_NAME}/${filename}`)
-          .map(async (image) => {
-            const destroyParams: SignatureParams = {
-              public_id: image.public_id,
-              timestamp,
-              api_key: apiKey,
-            }
-            const destroySignature = await generateSignature(destroyParams, apiSecret)
-            
-            return fetch(
-              `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Basic ${btoa(`${apiKey}:${apiSecret}`)}`,
-                },
-                body: JSON.stringify({
-                  ...destroyParams,
-                  signature: destroySignature,
-                }),
-              }
-            )
-          })
-      )
+      const deletePromises = resources
+        .filter((image: CloudinaryResource) => image.public_id !== `${FOLDER_NAME}/${filename}`)
+        .map((image: CloudinaryResource) => cloudinary.uploader.destroy(image.public_id))
+      return Promise.all(deletePromises)  
     })
     .catch(error => {
       console.error('Error cleaning up old images:', error)
@@ -160,7 +81,7 @@ export async function GET() {
         statusText: 'Internal Server Error',
         headers: {
           'Content-Type': 'application/json'
-        }
+        }  
       }
     )
   }

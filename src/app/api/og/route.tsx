@@ -149,6 +149,14 @@ export async function GET() {
     )
   } catch (error) {
     console.error('Error generating OG image:', error)
-    return new Response('Error generating OG image', { status: 500 })
+    return new Response(
+      JSON.stringify({ error: (error as Error).message }), 
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
   }
 }
