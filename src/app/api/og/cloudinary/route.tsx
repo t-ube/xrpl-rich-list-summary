@@ -141,7 +141,15 @@ export async function GET() {
     return NextResponse.redirect(uploadResponse.secure_url, { status: 307 })
   } catch (error) {
     console.error('Error handling OG image:', error)
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-    return NextResponse.redirect(`${siteUrl}/api/og`, { status: 307 })
+    return new NextResponse(
+      JSON.stringify({ error: (error as Error).message }), 
+      { 
+        status: 500, 
+        statusText: 'Internal Server Error',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
   }
 }
