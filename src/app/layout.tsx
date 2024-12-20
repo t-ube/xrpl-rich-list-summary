@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     url: process.env.NEXT_PUBLIC_SITE_URL,
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary`,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary?timestamp=${Date.now()}`,
         width: 1200,
         height: 630,
         alt: 'XRP Rich List Summary',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@shirome_x',
     creator: '@shirome_x',
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary`],
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary?timestamp=${Date.now()}`],
     title: 'XRP Rich List Summary',
     description: 'Track and analyze XRP holdings with real-time rich list data',
   }
