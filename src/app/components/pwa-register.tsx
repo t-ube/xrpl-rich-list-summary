@@ -1,4 +1,4 @@
-// app/components/pwa-register.tsx
+// src/app/components/pwa-register.tsx
 'use client';
 
 import { useEffect } from 'react';
@@ -9,7 +9,7 @@ export default function PWARegister() {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')
-          .then((registration) => {
+          .then(() => {
             console.log('ServiceWorker registration successful');
           })
           .catch((err) => {
