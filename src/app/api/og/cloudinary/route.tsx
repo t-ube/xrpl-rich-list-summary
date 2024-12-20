@@ -85,7 +85,13 @@ export async function GET() {
         method: 'POST',
         body: formData,
       }
-    ).then(res => res.json()) as CloudinaryUploadResponse
+    ).then(res => {
+      if (!res.ok) {
+        console.error('Error uploading to Cloudinary:', res.status, res.statusText)
+        throw new Error(`Failed to upload image to Cloudinary: ${res.status} ${res.statusText}`)
+      }
+      return res.json()
+    }) as CloudinaryUploadResponse
 
     // 古い画像の削除は非同期で行う
     fetch(
@@ -103,7 +109,13 @@ export async function GET() {
         }),
       }
     )
-    .then(res => res.json() as Promise<CloudinarySearchResponse>)
+    .then(res => {
+      if (!res.ok) {
+        console.error('Error searching images on Cloudinary:', res.status, res.statusText)
+        throw new Error(`Failed to search images on Cloudinary: ${res.status} ${res.statusText}`)
+      }
+      return res.json() as Promise<CloudinarySearchResponse>
+    })
     .then(({ resources }) => {
       // 現在のファイル以外の古い画像を削除
       return Promise.all(
