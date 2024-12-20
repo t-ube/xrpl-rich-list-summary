@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: '/api/og/cloudinary',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary`,
         width: 1200,
         height: 630,
         alt: 'XRP Rich List Summary',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    images: ['/api/og/cloudinary'],
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary`],
   },
 }
 
