@@ -7,6 +7,7 @@ import LastUpdated from '@/app/components/last-updated'
 import { MarketDataResponse } from '@/types/market-data'
 import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
 import { MARKET_DATA_CONFIG } from '@/config/market-data'
+import StructuredData from '@/app/components/structured-data'
 
 export const revalidate = 3600
 
@@ -20,7 +21,13 @@ async function fetchPriceData(endDate: string): Promise<MarketDataResponse[] | n
   
   try {
     const response = await fetch(url, {
-      next: { revalidate: 3600 } // キャッシュ設定を追加
+      next: { // キャッシュ設定
+        revalidate: 3600,
+        tags: ['price-data'] // キャッシュタグ
+      },
+      headers: {// レスポンスの圧縮
+        'Accept-Encoding': 'gzip, deflate, br'
+      }
     });
     
     if (!response.ok) {
@@ -48,13 +55,18 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto px-2 py-8">
-      <h1 className="text-3xl font-bold pl-2 mb-8">XRP Rich List Summary</h1>
-      <SlimDisclaimer />
-      <LastUpdated data={summaries || []} />
-      <CryptoTreemap data={summaries || []} />
-      <div className="mt-8">
+      <header>
+        <h1 className="text-3xl font-bold pl-2 mb-8">XRP Rich List Summary</h1>
+        <SlimDisclaimer />
+        <LastUpdated data={summaries || []} />
+      </header>
+      <section aria-label="Market Visualization">
+        <CryptoTreemap data={summaries || []} />
+      </section>
+      <section aria-label="Rich List Data" className="mt-8">
         <DataTable data={summaries as RichListSummaryWithChanges[] || []} priceData={priceData} />
-      </div>
+      </section>
+      <StructuredData data={summaries || []} priceData={priceData} />
     </main>
   )
 }

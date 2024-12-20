@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://https://xrp-rich-list-summary.shirome.net/sitemap.xml
