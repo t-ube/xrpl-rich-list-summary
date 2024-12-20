@@ -22,7 +22,19 @@ export const metadata: Metadata = {
     description: 'Track and analyze XRP holdings with real-time rich list data',
     type: 'website',
     locale: 'en_US',
-  }
+    images: [
+      {
+        url: '/api/og/cloudinary',
+        width: 1200,
+        height: 630,
+        alt: 'XRP Rich List Summary',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/api/og/cloudinary'],
+  },
 }
 
 export default function RootLayout({
