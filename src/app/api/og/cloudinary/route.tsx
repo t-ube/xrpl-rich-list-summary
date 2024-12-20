@@ -1,18 +1,8 @@
 // app/api/og/cloudinary/route.ts
 import { NextResponse } from 'next/server'
-import { v2 as cloudinary } from 'cloudinary'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
-
-interface CloudinaryResource {
-  public_id: string
-  secure_url: string
-}
-
-interface SignatureParams {
-  [key: string]: string | number | boolean
-}
 
 const FOLDER_NAME = 'xrp-rich-list-summary/og'
 
@@ -24,65 +14,77 @@ export async function GET() {
     const apiSecret = process.env.CLOUDINARY_API_SECRET
 
     if (!siteUrl || !cloudName || !apiKey || !apiSecret) {
-      console.error('Error: Missing environment variables')
       throw new Error('Missing environment variables')
     }
 
-    cloudinary.config({
-      cloud_name: cloudName,
-      api_key: apiKey,
-      api_secret: apiSecret,
-    })
-
     // OG画像のURLを生成
     const ogImageUrl = `${siteUrl}/api/og`
-
-    // 現在の時刻から一意のパブリックIDを生成（YYYY-MM-DD-HH形式）
     const now = new Date()
-    const filename = `${now.toISOString().slice(0, 13).replace('T', '-')}`
     const timestamp = Math.floor(Date.now() / 1000)
+    const filename = `${now.toISOString().slice(0, 13).replace('T', '-')}`
 
-    // アップロードパラメータ
-    const params: SignatureParams = {
+    // アップロードパラメータの準備
+    const params = {
       public_id: filename,
       folder: FOLDER_NAME,
       overwrite: true,
-      timestamp: timestamp,
+      timestamp
     }
 
-    // Cloudinaryへアップロード
-    const uploadResponse = await cloudinary.uploader.upload(ogImageUrl, params)
+    // 署名の生成
+    const signature = await generateSignature(params, apiSecret)
 
-    // 古い画像の削除は非同期で行う
-    cloudinary.api.resources({
-      type: 'upload',
-      prefix: FOLDER_NAME,
-      max_results: 100,
-    })
-    .then(result => {
-      const resources = result.resources
-      // 現在のファイル以外の古い画像を削除
-      const deletePromises = resources
-        .filter((image: CloudinaryResource) => image.public_id !== `${FOLDER_NAME}/${filename}`)
-        .map((image: CloudinaryResource) => cloudinary.uploader.destroy(image.public_id))
-      return Promise.all(deletePromises)  
-    })
-    .catch(error => {
-      console.error('Error cleaning up old images:', error)
-    })
+    // FormDataの構築
+    const formData = new FormData()
+    formData.append('file', ogImageUrl)
+    formData.append('timestamp', timestamp.toString())
+    formData.append('public_id', filename)
+    formData.append('folder', FOLDER_NAME)
+    formData.append('overwrite', 'true')
+    formData.append('api_key', apiKey)
+    formData.append('signature', signature)
 
-    return NextResponse.redirect(uploadResponse.secure_url, { status: 307 })
-  } catch (error) {
-    console.error('Error handling OG image:', error)
-    return new NextResponse(
-      JSON.stringify({ error: (error as Error).message }), 
-      { 
-        status: 500, 
-        statusText: 'Internal Server Error',
-        headers: {
-          'Content-Type': 'application/json'
-        }  
+    // Cloudinary APIへの直接リクエスト
+    const uploadResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: 'POST',
+        body: formData
       }
     )
+
+    if (!uploadResponse.ok) {
+      throw new Error(`Upload failed: ${await uploadResponse.text()}`)
+    }
+
+    const result = await uploadResponse.json()
+
+    // クリーンアップを非同期で実行
+    fetch('/api/og/cloudinary/cleanup')
+    .catch(error => {
+      console.error('Cleanup error:', error)
+    })
+    
+    return NextResponse.redirect(result.secure_url, { status: 307 })
+
+  } catch (error) {
+    console.error('Error handling OG image:', error)
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    )
   }
+}
+
+// Cloudinary API署名の生成
+async function generateSignature(params: Record<string, any>, apiSecret: string): Promise<string> {
+  const sortedParams = Object.keys(params)
+    .sort()
+    .map(key => `${key}=${params[key]}`)
+    .join('&')
+
+  const messageData = new TextEncoder().encode(sortedParams + apiSecret)
+  const hashBuffer = await crypto.subtle.digest('SHA-1', messageData)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
