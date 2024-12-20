@@ -21,7 +21,7 @@ interface SignatureParams {
   [key: string]: string | number | boolean
 }
 
-const FOLDER_NAME = 'xrpl-rich-list-summary/og'
+const FOLDER_NAME = 'xrp-rich-list-summary/og'
 
 async function generateSignature(params: SignatureParams, apiSecret: string): Promise<string> {
   // パラメータをソート
