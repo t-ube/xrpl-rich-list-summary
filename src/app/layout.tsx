@@ -18,10 +18,12 @@ export const metadata: Metadata = {
   description: 'Comprehensive analysis of XRP holdings, featuring real-time rich list data, price trends, and distribution metrics. Track top XRP wallets and market movements.',
   keywords: 'XRP, Rich List, Cryptocurrency, Blockchain Analysis, XRP Holdings, Market Data',
   openGraph: {
+    siteName: 'XRP Rich List Summary',
     title: 'XRP Rich List Summary',
     description: 'Track and analyze XRP holdings with real-time rich list data',
     type: 'website',
     locale: 'en_US',
+    url: process.env.NEXT_PUBLIC_SITE_URL,
     images: [
       {
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary`,
@@ -33,8 +35,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@shirome_x',
+    creator: '@shirome_x',
     images: [`${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary`],
-  },
+    title: 'XRP Rich List Summary',
+    description: 'Track and analyze XRP holdings with real-time rich list data',
+  }
 }
 
 export default function RootLayout({
