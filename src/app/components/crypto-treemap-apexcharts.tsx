@@ -3,9 +3,13 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
-import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
+import { RichListSummaryWithChanges } from '@/types/rich_list_changes';
+import LoadingLogo from '@/app/components/loading-logo';
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const Chart = dynamic(() => import('react-apexcharts'), { 
+  ssr: false,
+  loading: () => <LoadingLogo />
+});
 
 interface TreemapDataItem {
   x: string;
