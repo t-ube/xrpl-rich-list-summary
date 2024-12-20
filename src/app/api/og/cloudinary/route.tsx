@@ -61,23 +61,26 @@ export async function GET() {
 
     // クリーンアップを非同期で実行
     fetch('/api/og/cloudinary/cleanup')
-    .catch(error => {
-      console.error('Cleanup error:', error)
-    })
-    
+      .catch(error => {
+        console.error('Cleanup error:', error)
+      })
+
     return NextResponse.redirect(result.secure_url, { status: 307 })
 
   } catch (error) {
     console.error('Error handling OG image:', error)
     return NextResponse.json(
-      { error: (error as Error).message },
+      { error: (error instanceof Error ? error.message : 'Unknown error') },
       { status: 500 }
     )
   }
 }
 
-// Cloudinary API署名の生成
-async function generateSignature(params: Record<string, any>, apiSecret: string): Promise<string> {
+// パラメータの型定義
+type SignatureParams = Record<string, string | number | boolean>
+
+// 署名生成関数
+async function generateSignature(params: SignatureParams, apiSecret: string): Promise<string> {
   const sortedParams = Object.keys(params)
     .sort()
     .map(key => `${key}=${params[key]}`)
