@@ -26,7 +26,8 @@ async function fetchPriceData(endDate: string): Promise<MarketDataResponse[] | n
         tags: ['price-data'] // キャッシュタグ
       },
       headers: {// レスポンスの圧縮
-        'Accept-Encoding': 'gzip, deflate, br'
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-store' // クライアントサイドでのキャッシュを無効化
       }
     });
     
