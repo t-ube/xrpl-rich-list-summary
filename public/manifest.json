@@ -4,7 +4,7 @@
   "description": "XRP Rich List Summary and Analysis",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#D0CFBB",
+  "background_color": "#FFFFFF",
   "theme_color": "#000000",
   "icons": [
     {
