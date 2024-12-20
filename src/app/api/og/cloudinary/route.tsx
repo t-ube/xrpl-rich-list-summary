@@ -17,9 +17,13 @@ interface CloudinaryUploadResponse extends CloudinaryResource {
   format: string
 }
 
+interface SignatureParams {
+  [key: string]: string | number | boolean
+}
+
 const FOLDER_NAME = 'xrpl-rich-list-summary/og'
 
-function generateSignature(params: Record<string, any>, apiSecret: string): string {
+async function generateSignature(params: SignatureParams, apiSecret: string): Promise<string> {
   // パラメータをソート
   const sortedKeys = Object.keys(params).sort()
   
@@ -29,11 +33,9 @@ function generateSignature(params: Record<string, any>, apiSecret: string): stri
     .join('&') + apiSecret
 
   // SHA-1ハッシュを生成
-  return crypto.subtle.digest('SHA-1', new TextEncoder().encode(stringToSign))
-    .then(hashBuffer => {
-      const hashArray = Array.from(new Uint8Array(hashBuffer))
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-    }) as unknown as string
+  const hashBuffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(stringToSign))
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 export async function GET() {
@@ -56,7 +58,7 @@ export async function GET() {
     const timestamp = Math.floor(Date.now() / 1000)
 
     // アップロードパラメータ
-    const uploadParams = {
+    const uploadParams: SignatureParams = {
       public_id: filename,
       folder: FOLDER_NAME,
       overwrite: true,
@@ -107,8 +109,15 @@ export async function GET() {
       return Promise.all(
         resources
           .filter(image => image.public_id !== `${FOLDER_NAME}/${filename}`)
-          .map(image => 
-            fetch(
+          .map(async (image) => {
+            const destroyParams: SignatureParams = {
+              public_id: image.public_id,
+              timestamp,
+              api_key: apiKey,
+            }
+            const destroySignature = await generateSignature(destroyParams, apiSecret)
+            
+            return fetch(
               `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
               {
                 method: 'POST',
@@ -117,14 +126,12 @@ export async function GET() {
                   'Authorization': `Basic ${btoa(`${apiKey}:${apiSecret}`)}`,
                 },
                 body: JSON.stringify({
-                  public_id: image.public_id,
-                  timestamp,
-                  api_key: apiKey,
-                  signature: generateSignature({ public_id: image.public_id, timestamp }, apiSecret),
+                  ...destroyParams,
+                  signature: destroySignature,
                 }),
               }
             )
-          )
+          })
       )
     })
     .catch(error => {
