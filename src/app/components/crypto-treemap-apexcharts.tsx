@@ -31,8 +31,10 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
     
     if (effectivePercentage <= -7) return '#991B1B';
     if (effectivePercentage <= -1) return '#DC2626';
-    if (effectivePercentage < 0) return '#FF5252';
+    if (effectivePercentage <= -0.01) return '#FF5252';
+    if (effectivePercentage < 0) return '#FA9393';
     if (effectivePercentage === 0) return '#90A4AE';
+    if (effectivePercentage < 0.01) return '#79F2C0';
     if (effectivePercentage < 1) return '#4DD8A3';
     if (effectivePercentage < 7) return '#0EB784';
     return '#047857';
@@ -111,9 +113,11 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
           ranges: [
             { from: Number.NEGATIVE_INFINITY, to: -7, color: '#991B1B' },
             { from: -7, to: -1, color: '#DC2626' },
-            { from: -1, to: 0, color: '#FF5252' },
+            { from: -1, to: -0.01, color: '#FA9393' },
+            { from: -0.01, to: 0, color: '#FF5252' },
             { from: 0, to: 0, color: '#90A4AE' },
-            { from: 0, to: 1, color: '#4DD8A3' },
+            { from: 0, to: 0.01, color: '#79F2C0' },
+            { from: 0.01, to: 1, color: '#4DD8A3' },
             { from: 1, to: 7, color: '#0EB784' },
             { from: 7, to: Number.POSITIVE_INFINITY, color: '#047857' }
           ]

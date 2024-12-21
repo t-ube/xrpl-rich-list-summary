@@ -19,12 +19,14 @@ export async function GET() {
     const getColor = (percentage: number): string => {
       // 閾値未満の変化は0として扱う
       const effectivePercentage = Math.abs(percentage) < PERCENTAGE_THRESHOLD ? 0 : percentage
-      if (effectivePercentage <= -7) return '#991B1B'
-      if (effectivePercentage <= -1) return '#DC2626'
-      if (effectivePercentage < 0) return '#FF5252'
-      if (effectivePercentage === 0) return '#90A4AE'
-      if (effectivePercentage < 1) return '#4DD8A3'
-      if (effectivePercentage < 7) return '#0EB784'
+      if (effectivePercentage <= -7) return '#991B1B';
+      if (effectivePercentage <= -1) return '#DC2626';
+      if (effectivePercentage <= -0.01) return '#FF5252';
+      if (effectivePercentage < 0) return '#FA9393';
+      if (effectivePercentage === 0) return '#90A4AE';
+      if (effectivePercentage < 0.01) return '#79F2C0';
+      if (effectivePercentage < 1) return '#4DD8A3';
+      if (effectivePercentage < 7) return '#0EB784';
       return '#047857'
     }
 
