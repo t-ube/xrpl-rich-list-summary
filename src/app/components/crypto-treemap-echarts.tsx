@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { EChartsOption } from 'echarts';
+import type { EChartsOption, TreemapSeriesOption } from 'echarts';
 import ReactECharts from 'echarts-for-react';
 import { RichListSummaryWithChanges } from '@/types/rich_list_changes';
-import LoadingLogo from '@/app/components/loading-logo';
+import type { CallbackDataParams } from 'echarts/types/dist/shared';
+import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 
 interface TreemapDataItem {
   name: string;
@@ -18,15 +19,10 @@ interface TreemapDataItem {
   show_total_xrp?: number;
 }
 
-interface CategoryTreemapItem extends TreemapDataItem {
-  category?: string;
-}
-
-// 表示モードの型定義
+// TooltipParamsType for ECharts tooltip formatter
 type ViewMode = 'category' | 'country';
 
 const CryptoTreemapEcharts: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data }) => {
-  // 表示モードの状態
   const [viewMode, setViewMode] = useState<ViewMode>('category');
   const CHANGE_THRESHOLD = 1.0;
   const PERCENTAGE_THRESHOLD = 0.001;
@@ -50,13 +46,7 @@ const CryptoTreemapEcharts: React.FC<{ data: RichListSummaryWithChanges[] }> = (
   const transformData = React.useMemo<TreemapDataItem[]>(() => {
     if (!data || data.length === 0) return [];
 
-    const totalSize = data.reduce((sum, item) => sum + (item.show_total_xrp || 0), 0);
-    const threshold = totalSize * 0.00005;
-    
-    // カテゴリまたは国籍でグループ化
-    const groups: { [key: string]: TreemapDataItem[] } = {};
-    let smallItemsTotal = 0;
-    let smallItemsCount = 0;
+    const groups: Record<string, TreemapDataItem[]> = {};
 
     data.forEach(item => {
       const effectiveChange = Math.abs(item.change_24h || 0) < CHANGE_THRESHOLD ? 0 : (item.change_24h || 0);
@@ -75,7 +65,6 @@ const CryptoTreemapEcharts: React.FC<{ data: RichListSummaryWithChanges[] }> = (
         show_total_xrp: item.show_total_xrp || 0
       };
 
-      // viewModeに応じてグループ化キーを選択
       const groupKey = viewMode === 'category' 
         ? (item.entity_category || 'Other')
         : (item.entity_country || 'Unknown');
@@ -86,14 +75,11 @@ const CryptoTreemapEcharts: React.FC<{ data: RichListSummaryWithChanges[] }> = (
       groups[groupKey].push(treeItem);
     });
 
-    // グループごとのデータを階層構造に変換
-    const result: TreemapDataItem[] = Object.entries(groups).map(([group, items]) => ({
+    return Object.entries(groups).map(([group, items]) => ({
       name: group,
       value: items.reduce((sum, item) => sum + (item.value || 0), 0),
       children: items
     }));
-
-    return result;
   }, [data, viewMode]);
 
   const getPercentageSymbol = (percentage: number | null | undefined): string => {
@@ -112,10 +98,13 @@ const CryptoTreemapEcharts: React.FC<{ data: RichListSummaryWithChanges[] }> = (
   const option: EChartsOption = {
     roam: false,
     tooltip: {
-      formatter: (params: any) => {
-        const data = params.data;
+      formatter: (params: TopLevelFormatterParams): string | HTMLElement | HTMLElement[] => {
+        const treeParams = params as CallbackDataParams & {
+          data: TreemapDataItem;
+          treePathInfo?: Array<{ name: string }>;
+        };
+        const data = treeParams.data;
         if (!data.show_total_xrp) {
-          // カテゴリレベルのツールチップ
           return `
             <div class="p-4">
               <div class="font-bold">${data.name}</div>
@@ -129,7 +118,6 @@ const CryptoTreemapEcharts: React.FC<{ data: RichListSummaryWithChanges[] }> = (
             </div>
           `;
         }
-        // 個別アイテムのツールチップ
         return `
           <div class="p-4">
             <div class="font-bold">${data.name}</div>
@@ -177,7 +165,7 @@ const CryptoTreemapEcharts: React.FC<{ data: RichListSummaryWithChanges[] }> = (
       breadcrumb: {
         show: false
       }
-    }]
+    } as TreemapSeriesOption]
   };
 
   if (!data || data.length === 0) {
