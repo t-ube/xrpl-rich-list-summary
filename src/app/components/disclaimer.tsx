@@ -54,7 +54,7 @@ const Disclaimer = () => {
               </p>
               
               <p>
-                <span className="font-semibold">Balance Calculation:</span> Total XRP includes both available and escrowed amounts.
+                <span className="font-semibold">Balance Calculation:</span> Total XRP includes both available and escrowed amounts. All prices are displayed in XRP/RLUSD pairs.
               </p>
               
               <p>

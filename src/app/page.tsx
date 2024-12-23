@@ -16,7 +16,7 @@ async function fetchPriceData(endDate: string): Promise<MarketDataResponse[] | n
   start.setDate(start.getDate() - 7);
   const startTime = start.toISOString();
 
-  const { issuer, currency } = MARKET_DATA_CONFIG.GATEHUB_USDC;
+  const { issuer, currency } = MARKET_DATA_CONFIG.RIPPLE_RLUSD;
   const url = `https://data.xrplf.org/v1/iou/market_data/XRP/${issuer}_${currency}?interval=${MARKET_DATA_CONFIG.INTERVAL}&start=${startTime}&end=${endDate}&descending=true&limit=${MARKET_DATA_CONFIG.LIMIT}`;
   
   try {
