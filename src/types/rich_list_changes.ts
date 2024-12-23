@@ -7,6 +7,8 @@ export interface RichListSummaryWithChanges {
   total_escrow: number;
   total_xrp: number;
   show_total_xrp: number;
+  entity_category: string;
+  entity_country: string;
   change_1h: number | null
   percentage_1h: number | null
   change_3h: number | null

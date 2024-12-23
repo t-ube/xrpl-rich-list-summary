@@ -2,7 +2,8 @@
 import { supabase } from '@/app/lib/supabase'
 import DataTable from '@/app/components/data-table'
 import SlimDisclaimer from '@/app/components/disclaimer-slim'
-import CryptoTreemap from '@/app/components/crypto-treemap-apexcharts'
+//import CryptoTreemap from '@/app/components/crypto-treemap-apexcharts'
+import CryptoTreemapEcharts from '@/app/components/crypto-treemap-echarts'
 import LastUpdated from '@/app/components/last-updated'
 import { MarketDataResponse } from '@/types/market-data'
 import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
@@ -61,7 +62,7 @@ export default async function Home() {
         <LastUpdated data={summaries || []} />
       </header>
       <section aria-label="Market Visualization">
-        <CryptoTreemap data={summaries || []} />
+        <CryptoTreemapEcharts data={summaries || []} />
       </section>
       <section aria-label="Rich List Data" className="mt-8">
         <DataTable data={summaries as RichListSummaryWithChanges[] || []} priceData={priceData} />
