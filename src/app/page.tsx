@@ -1,23 +1,47 @@
 // src/app/page.tsx
 import { supabase } from '@/app/lib/supabase'
-import DataTable from '@/app/components/data-table'
 import SlimDisclaimer from '@/app/components/disclaimer-slim'
-import CryptoTreemap from '@/app/components/crypto-treemap-apexcharts'
+import TabsWithSwiper from '@/app/components/tabs-with-swiper'
 import LastUpdated from '@/app/components/last-updated'
 import { MarketDataResponse } from '@/types/market-data'
-import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
 import { MARKET_DATA_CONFIG } from '@/config/market-data'
-import StructuredData from '@/app/components/structured-data'
+import { TABLE_CONFIG } from '@/config/table-config'
+import { SummaryContentProps } from '@/app/components/summary-content'
+import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
 
-export const revalidate = 3600
+// キャッシュと再生成の設定
+export const revalidate = 3600 // 1時間ごとに再生成
+
+// SSGのためのデータフェッチ
+async function fetchTableData(tableName: string) {
+  const { data: summaries } = await supabase
+    .from(tableName)
+    .select('*, created_at')
+    .gte('show_total_xrp', 1000)
+    .order('show_total_xrp', { ascending: false });
+
+  let priceData = null;
+  if (summaries && summaries.length > 0) {
+    priceData = await fetchPriceData(summaries[0].created_at);
+  }
+
+  return {
+    data: {
+      summaries: summaries as RichListSummaryWithChanges[] || [],
+      priceData: priceData ? priceData as MarketDataResponse[] : null
+    }
+  };
+}
 
 async function fetchPriceData(endDate: string): Promise<MarketDataResponse[] | null> {
   const start = new Date(endDate);
+  const end = new Date(endDate);
   start.setDate(start.getDate() - 7);
   const startTime = start.toISOString();
+  const endTime = end.toISOString();
 
   const { issuer, currency } = MARKET_DATA_CONFIG.RIPPLE_RLUSD;
-  const url = `https://data.xrplf.org/v1/iou/market_data/XRP/${issuer}_${currency}?interval=${MARKET_DATA_CONFIG.INTERVAL}&start=${startTime}&end=${endDate}&descending=true&limit=${MARKET_DATA_CONFIG.LIMIT}`;
+  const url = `https://data.xrplf.org/v1/iou/market_data/XRP/${issuer}_${currency}?interval=${MARKET_DATA_CONFIG.INTERVAL}&start=${startTime}&end=${endTime}&descending=true&limit=${MARKET_DATA_CONFIG.LIMIT}`;
   
   try {
     const response = await fetch(url, {
@@ -31,7 +55,7 @@ async function fetchPriceData(endDate: string): Promise<MarketDataResponse[] | n
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch price data: ${response.status}`);
+      throw new Error(`Failed to fetch price data: ${response.status} ${url}`);
     }
     
     return response.json();
@@ -42,31 +66,29 @@ async function fetchPriceData(endDate: string): Promise<MarketDataResponse[] | n
 }
 
 export default async function Home() {
-  const { data: summaries } = await supabase
-  .from('xrpl_rich_list_summary_with_total_changes')
-  .select('*, created_at')
-  .gte('show_total_xrp', 1000)
-  .order('show_total_xrp', { ascending: false })
-
-  let priceData = null;
-  if (summaries && summaries.length > 0) {
-    priceData = await fetchPriceData(summaries[0].created_at) as MarketDataResponse[];
-  }
+  // 全テーブルのデータを並列でフェッチ
+  const [totalData, availableData, categoryData, countryData] = await Promise.all([
+    fetchTableData(TABLE_CONFIG.SUMMARY_TYPE.TOTAL),
+    fetchTableData(TABLE_CONFIG.SUMMARY_TYPE.AVAILABLE),
+    fetchTableData(TABLE_CONFIG.SUMMARY_TYPE.CATEGORY),
+    fetchTableData(TABLE_CONFIG.SUMMARY_TYPE.COUNTRY),
+  ]);
 
   return (
     <main className="container mx-auto px-2 py-8">
       <header>
         <h1 className="text-3xl font-bold pl-2 mb-8">XRP Rich List Summary</h1>
         <SlimDisclaimer />
-        <LastUpdated data={summaries || []} />
+        <LastUpdated data={totalData.data.summaries || []} />
       </header>
-      <section aria-label="Market Visualization">
-        <CryptoTreemap data={summaries || []} />
-      </section>
-      <section aria-label="Rich List Data" className="mt-8">
-        <DataTable data={summaries as RichListSummaryWithChanges[] || []} priceData={priceData} />
-      </section>
-      <StructuredData data={summaries || []} priceData={priceData} />
+
+      {/* Client Component for interactive tabs */}
+      <TabsWithSwiper 
+        totalData={totalData as SummaryContentProps}
+        availableData={availableData as SummaryContentProps}
+        categoryData={categoryData as SummaryContentProps}
+        countryData={countryData as SummaryContentProps}
+      />
     </main>
   )
 }

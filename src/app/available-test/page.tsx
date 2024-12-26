@@ -11,11 +11,13 @@ export const revalidate = 3600
 
 async function fetchPriceData(endDate: string): Promise<MarketDataResponse[] | null> {
   const start = new Date(endDate);
+  const end = new Date(endDate);
   start.setDate(start.getDate() - 7);
   const startTime = start.toISOString();
+  const endTime = end.toISOString();
 
   const { issuer, currency } = MARKET_DATA_CONFIG.RIPPLE_RLUSD;
-  const url = `https://data.xrplf.org/v1/iou/market_data/XRP/${issuer}_${currency}?interval=${MARKET_DATA_CONFIG.INTERVAL}&start=${startTime}&end=${endDate}&descending=true&limit=${MARKET_DATA_CONFIG.LIMIT}`;
+  const url = `https://data.xrplf.org/v1/iou/market_data/XRP/${issuer}_${currency}?interval=${MARKET_DATA_CONFIG.INTERVAL}&start=${startTime}&end=${endTime}&descending=true&limit=${MARKET_DATA_CONFIG.LIMIT}`;
   
   try {
     const response = await fetch(url, {
