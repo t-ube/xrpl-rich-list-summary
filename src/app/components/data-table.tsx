@@ -127,260 +127,261 @@ const useIsMobile = () => {
   return isMobile
 }
 
-export default function DataTable({ data, priceData, sourceType }: DataTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const isMobile = useIsMobile()
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+const getIcon = (sourceType:string, row: Row<RichListSummaryWithChanges>) => {
+  const label = row.getValue('grouped_label') as string
 
-  const getTotalTitle = (): string => {
-    switch (sourceType) {
-      case "total":
-        if (isMobile)
-          return "Total";
-        else
-          return "Total XRP";
-      case "available":
-        if (isMobile)
-          return "Available";
-        else
-          return "Available XRP";
-      case "country":
-        if (isMobile)
-          return "Total";
-        else
-          return "Total XRP";
-      case "category":
-        if (isMobile)
-          return "Total";
-        else
-          return "Total XRP";
-      default:
-        if (isMobile)
-          return "Total";
-        else
-          return "Total XRP";
-    }
-  };
-
-  const getIcon = (row: Row<RichListSummaryWithChanges>) => {
-    const label = row.getValue('grouped_label') as string
-
-    if (sourceType == 'country') {
-      return <CountryIcon country={label}/>
-    } else if (sourceType == 'category') {
-      return <CategoryIcon category={label}/>
-    }
-    return <CloudinaryExchangeIcon exchange={label} />
+  if (sourceType == 'country') {
+    return <CountryIcon country={label}/>
+  } else if (sourceType == 'category') {
+    return <CategoryIcon category={label}/>
   }
+  return <CloudinaryExchangeIcon exchange={label} />
+}
 
-  // 基本のカラム配列を取得
-  const getBaseColumns = (isMobile: boolean, sourceType: string): ColumnDef<RichListSummaryWithChanges>[] => {
-    let baseColumns: ColumnDef<RichListSummaryWithChanges>[] = [
-      // Label column
+// 基本のカラム配列を取得
+const getBaseColumns = (isMobile: boolean, sourceType: string): ColumnDef<RichListSummaryWithChanges>[] => {
+  let extendColumns: ColumnDef<RichListSummaryWithChanges>[] = []
+
+  if (!isMobile && (sourceType === 'total' || sourceType === 'available')) {
+    extendColumns = [
       {
-        accessorKey: 'grouped_label',
+        accessorKey: 'entity_country',
         header: ({ column }) => {
           return (
-            <div className="flex items-center cursor-pointer bg-white" onClick={() => column.toggleSorting()}>
-              {isMobile ? 'Label' : 'Wallet Label'}
+            <div className="flex items-center justify-center cursor-pointer" onClick={() => column.toggleSorting()}>
+              {'Country'}
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </div>
           )
         },
         cell: ({ row }) => {
-          const label = row.getValue('grouped_label') as string
+          const country = row.getValue('entity_country') as string
           return (
-            <div className="flex items-center gap-2 bg-white">
-              {getIcon(row)}
-              <span className="font-medium">
-                {isMobile ? (label.length > 10 ? `${label.slice(0, 8)}...` : label) : label}
-              </span>
+            <div className="flex items-center justify-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <CountryIcon country={country}/>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{country}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )
         },
       },
-    ]
-
-    let extendColumns: ColumnDef<RichListSummaryWithChanges>[] = []
-
-    if (!isMobile && (sourceType === 'total' || sourceType === 'available')) {
-      extendColumns = [
-        {
-          accessorKey: 'entity_country',
-          header: ({ column }) => {
-            return (
-              <div className="flex items-center justify-center cursor-pointer" onClick={() => column.toggleSorting()}>
-                {'Country'}
-                <ArrowUpDown className="ml-2 h-4 w-4" />
-              </div>
-            )
-          },
-          cell: ({ row }) => {
-            const country = row.getValue('entity_country') as string
-            return (
-              <div className="flex items-center justify-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <CountryIcon country={country}/>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{country}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            )
-          },
-        },
-        {
-          accessorKey: 'entity_category',
-          header: ({ column }) => {
-            return (
-              <div className="flex items-center justify-center cursor-pointer" onClick={() => column.toggleSorting()}>
-                {'Category'}
-                <ArrowUpDown className="ml-2 h-4 w-4" />
-              </div>
-            )
-          },
-          cell: ({ row }) => {
-            const category = row.getValue('entity_category') as string
-            return (
-              <div className="flex items-center justify-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <CategoryIcon category={category}/>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{category}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            )
-          },
-        },
-      ]
-    }
-
-    return [
-      ...baseColumns,
       {
-        accessorKey: 'show_total_xrp',
+        accessorKey: 'entity_category',
         header: ({ column }) => {
           return (
-            <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-              {getTotalTitle()}
+            <div className="flex items-center justify-center cursor-pointer" onClick={() => column.toggleSorting()}>
+              {'Category'}
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </div>
           )
         },
-        cell: ({ row }) => (
-          <div className="text-right font-medium">
-            {Math.round(row.getValue<number>('show_total_xrp')).toLocaleString()}
-            {!isMobile && ' XRP'}
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'change_1h',
-        header: ({ column }) => (
-          <div className="text-right flex items-center justify-end cursor-pointer" 
-               onClick={() => column.toggleSorting()}>
-            {isMobile ? '1h' : '1h Change'}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </div>
-        ),
-        cell: ({ row }) => (
-          <div className="text-right">
-            <ChangeCell 
-              change={row.getValue('change_1h')}
-              percentage={row.original.percentage_1h}
-              isMobile={isMobile}
-            />
-          </div>
-        ),
-        sortingFn: createChangeSortingFn('change_1h')
-      },
-      {
-        accessorKey: 'change_24h',
-        header: ({ column }) => (
-          <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-            {isMobile ? '24h' : '24h Change'}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </div>
-        ),
-        cell: ({ row }) => (
-          <div className="text-right">
-            <ChangeCell 
-              change={row.getValue('change_24h')}
-              percentage={row.original.percentage_24h}
-              isMobile={isMobile}
-            />
-          </div>
-        ),
-        sortingFn: createChangeSortingFn('change_24h')
-      },
-      {
-        accessorKey: 'change_168h',
-        header: ({ column }) => (
-          <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-            {isMobile ? '7d' : '7d Change'}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </div>
-        ),
-        cell: ({ row }) => (
-          <div className="text-right">
-            <ChangeCell 
-              change={row.getValue('change_168h')}
-              percentage={row.original.percentage_168h}
-              isMobile={isMobile}
-            />
-          </div>
-        ),
-        sortingFn: createChangeSortingFn('change_168h')
-      },
-      {
-        accessorKey: 'change_720h',
-        header: ({ column }) => (
-          <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-            {isMobile ? '30d' : '30d Change'}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </div>
-        ),
-        cell: ({ row }) => (
-          <div className="text-right">
-            <ChangeCell 
-              change={row.getValue('change_720h')} 
-              percentage={row.original.percentage_720h}
-              isMobile={isMobile}
-            />
-          </div>
-        ),
-        sortingFn: createChangeSortingFn('change_720h')
-      },
-      {
-        accessorKey: 'count',
-        header: ({ column }) => {
+        cell: ({ row }) => {
+          const category = row.getValue('entity_category') as string
           return (
-            <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
-              {isMobile ? 'Wallets' : 'Total Wallets'}
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+            <div className="flex items-center justify-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <CategoryIcon category={category}/>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{category}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )
         },
-        cell: ({ row }) => (
-          <div className="text-right font-medium">
-            {row.getValue<number>('count').toLocaleString()}
-          </div>
-        ),
       },
-      ...extendColumns,
     ]
   }
 
-  const columns = useMemo(() => getBaseColumns(isMobile, sourceType), [isMobile, sourceType])
+  return [
+    // Label column
+    {
+      accessorKey: 'grouped_label',
+      header: ({ column }) => {
+        return (
+          <div className="flex items-center cursor-pointer bg-white" onClick={() => column.toggleSorting()}>
+            {isMobile ? 'Label' : 'Wallet Label'}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+        )
+      },
+      cell: ({ row }) => {
+        const label = row.getValue('grouped_label') as string
+        return (
+          <div className="flex items-center gap-2 bg-white">
+            {getIcon(sourceType, row)}
+            <span className="font-medium">
+              {isMobile ? (label.length > 10 ? `${label.slice(0, 8)}...` : label) : label}
+            </span>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'show_total_xrp',
+      header: ({ column }) => {
+        return (
+          <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
+            {getTotalTitle(isMobile, sourceType)}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+        )
+      },
+      cell: ({ row }) => (
+        <div className="text-right font-medium">
+          {Math.round(row.getValue<number>('show_total_xrp')).toLocaleString()}
+          {!isMobile && ' XRP'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'change_1h',
+      header: ({ column }) => (
+        <div className="text-right flex items-center justify-end cursor-pointer" 
+              onClick={() => column.toggleSorting()}>
+          {isMobile ? '1h' : '1h Change'}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-right">
+          <ChangeCell 
+            change={row.getValue('change_1h')}
+            percentage={row.original.percentage_1h}
+            isMobile={isMobile}
+          />
+        </div>
+      ),
+      sortingFn: createChangeSortingFn('change_1h')
+    },
+    {
+      accessorKey: 'change_24h',
+      header: ({ column }) => (
+        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
+          {isMobile ? '24h' : '24h Change'}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-right">
+          <ChangeCell 
+            change={row.getValue('change_24h')}
+            percentage={row.original.percentage_24h}
+            isMobile={isMobile}
+          />
+        </div>
+      ),
+      sortingFn: createChangeSortingFn('change_24h')
+    },
+    {
+      accessorKey: 'change_168h',
+      header: ({ column }) => (
+        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
+          {isMobile ? '7d' : '7d Change'}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-right">
+          <ChangeCell 
+            change={row.getValue('change_168h')}
+            percentage={row.original.percentage_168h}
+            isMobile={isMobile}
+          />
+        </div>
+      ),
+      sortingFn: createChangeSortingFn('change_168h')
+    },
+    {
+      accessorKey: 'change_720h',
+      header: ({ column }) => (
+        <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
+          {isMobile ? '30d' : '30d Change'}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-right">
+          <ChangeCell 
+            change={row.getValue('change_720h')} 
+            percentage={row.original.percentage_720h}
+            isMobile={isMobile}
+          />
+        </div>
+      ),
+      sortingFn: createChangeSortingFn('change_720h')
+    },
+    {
+      accessorKey: 'count',
+      header: ({ column }) => {
+        return (
+          <div className="text-right flex items-center justify-end cursor-pointer" onClick={() => column.toggleSorting()}>
+            {isMobile ? 'Wallets' : 'Total Wallets'}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+        )
+      },
+      cell: ({ row }) => (
+        <div className="text-right font-medium">
+          {row.getValue<number>('count').toLocaleString()}
+        </div>
+      ),
+    },
+    ...extendColumns,
+  ]
+}
+
+const getTotalTitle = (isMobile:boolean, sourceType:string): string => {
+  switch (sourceType) {
+    case "total":
+      if (isMobile)
+        return "Total";
+      else
+        return "Total XRP";
+    case "available":
+      if (isMobile)
+        return "Available";
+      else
+        return "Available XRP";
+    case "country":
+      if (isMobile)
+        return "Total";
+      else
+        return "Total XRP";
+    case "category":
+      if (isMobile)
+        return "Total";
+      else
+        return "Total XRP";
+    default:
+      if (isMobile)
+        return "Total";
+      else
+        return "Total XRP";
+  }
+};
+
+export default function DataTable({ data, priceData, sourceType }: DataTableProps) {
+  const [sorting, setSorting] = useState<SortingState>([])
+  const isMobile = useIsMobile()
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+
+
+
+  const columns = useMemo(
+    () => getBaseColumns(isMobile, sourceType),
+    [isMobile, sourceType]
+  )
 
   const table = useReactTable({
     data,

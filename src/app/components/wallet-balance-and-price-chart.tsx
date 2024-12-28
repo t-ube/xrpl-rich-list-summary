@@ -85,7 +85,7 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
         })
         .finally(() => setLoading(false));
     }
-  }, [walletLabel, isOpen, priceData]);
+  }, [walletLabel, isOpen, priceData, sourceType]);
   
   const slideClass = isMobile
     ? `fixed bottom-0 left-0 right-0 h-[70vh] transform transition-transform duration-300 ease-in-out border-t border-gray-200 ${
