@@ -14,7 +14,7 @@ const LastUpdated: React.FC<LastUpdatedProps> = ({ data }) => {
       month: '2-digit',
       day: '2-digit',
       hour12: false
-    })}, ${String(hours === 24 ? '00' : hours.toString().padStart(2, '0'))}:${String(date.getMinutes()).padStart(2, '0')} UTC`;
+    })}, ${String(hours === 24 ? '00' : hours.toString().padStart(2, '0'))}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
   const latestTimestamp = data.length > 0 ? data[0].created_at : null;
