@@ -24,12 +24,9 @@ const LoadingSkeleton = () => (
     <div className="flex items-center justify-center w-full py-12">
       <div className="relative">
         <LoadingLogo />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-        </div>
       </div>
     </div>
-    
+
     {/* Treemap skeleton */}
     <div className="w-full bg-white rounded-lg shadow-lg">
       <div className="p-4 border-b">
