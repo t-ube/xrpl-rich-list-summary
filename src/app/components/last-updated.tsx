@@ -8,13 +8,15 @@ interface LastUpdatedProps {
 
 const LastUpdated: React.FC<LastUpdatedProps> = ({ data }) => {
   const formatDate = (date: Date) => {
-    const hours = date.getHours();
-    return `${date.toLocaleDateString('en-US', {
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      hour12: false
-    })}, ${String(hours === 24 ? '00' : hours.toString().padStart(2, '0'))}:${String(date.getMinutes()).padStart(2, '0')}`;
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'UTC'
+    }).format(date) + ' UTC';
   };
 
   const latestTimestamp = data.length > 0 ? data[0].created_at : null;
