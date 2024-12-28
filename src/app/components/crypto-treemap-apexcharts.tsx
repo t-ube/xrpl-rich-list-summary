@@ -21,10 +21,40 @@ interface TreemapDataItem {
   foreColor?: string;
 }
 
-const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data }) => {
+const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[], sourceType: string }> = ({ data, sourceType }) => {
   const CHANGE_THRESHOLD = 1.0; // 1.0 XRP未満の変化は0として扱う
   const PERCENTAGE_THRESHOLD = 0.001 // 0.001%未満の変化も0として扱う
 
+  const getTitle = (type: string): string => {
+    switch (type) {
+      case "total":
+        return "Wallet Balance Distribution (24h)";
+      case "available":
+        return "Available Balance Distribution (24h)";
+      case "country":
+        return "Balance Distribution by Country (24h)";
+      case "category":
+        return "Balance Distribution by Category (24h)";
+      default:
+        return "Wallet Balance Distribution (24h)";
+    }
+  };
+
+  const getDescription = (type: string): string => {
+    switch (type) {
+      case "total":
+        return "Size represents total balance, color indicates 24-hour change";
+      case "available":
+        return "Size represents available balance excluding escrow, color indicates 24-hour change";
+      case "country":
+        return "Size represents total balance by country, color indicates 24-hour change";
+      case "category":
+        return "Size represents total balance by wallet category, color indicates 24-hour change";
+      default:
+        return "Size represents total balance, color indicates 24-hour change";
+    }
+  };
+  
   const getColor = (percentage: number): string => {
     // 閾値未満の変化は0として扱う
     const effectivePercentage = Math.abs(percentage) < PERCENTAGE_THRESHOLD ? 0 : percentage;
@@ -165,8 +195,8 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[] }> = ({ data 
   return (
     <div className="w-full bg-white rounded-lg shadow-lg">
       <div className="p-4 pb-0">
-        <h2 className="text-xl font-semibold">Wallet Balance Distribution (24h)</h2>
-        <p className="text-sm text-gray-500">Size represents total balance, color indicates 24-hour change</p>
+        <h2 className="text-xl font-semibold">{getTitle(sourceType)}</h2>
+        <p className="text-sm text-gray-500">{getDescription(sourceType)}</p>
       </div>
       <div className="h-[550px] px-4 pb-4">
         <Chart

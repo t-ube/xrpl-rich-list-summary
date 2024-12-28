@@ -1,12 +1,13 @@
 // src/app/page.tsx
 import { supabase } from '@/app/lib/supabase'
 import SlimDisclaimer from '@/app/components/disclaimer-slim'
-import TabsWithSwiper from '@/app/components/tabs-with-swiper'
+import ContentTabs from '@/app/components/content-tabs'
 import LastUpdated from '@/app/components/last-updated'
+import StructuredData from '@/app/components/structured-data'
 import { MarketDataResponse } from '@/types/market-data'
 import { MARKET_DATA_CONFIG } from '@/config/market-data'
 import { TABLE_CONFIG } from '@/config/table-config'
-import { SummaryContentProps } from '@/app/components/summary-content'
+import { SummaryContentData } from '@/types/summary-content'
 import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
 
 // キャッシュと再生成の設定
@@ -83,12 +84,17 @@ export default async function Home() {
       </header>
 
       {/* Client Component for interactive tabs */}
-      <TabsWithSwiper 
-        totalData={totalData as SummaryContentProps}
-        availableData={availableData as SummaryContentProps}
-        categoryData={categoryData as SummaryContentProps}
-        countryData={countryData as SummaryContentProps}
+      <ContentTabs
+        totalData={totalData as SummaryContentData}
+        availableData={availableData as SummaryContentData}
+        categoryData={categoryData as SummaryContentData}
+        countryData={countryData as SummaryContentData}
       />
+      
+      <StructuredData data={totalData.data.summaries || []} priceData={totalData.data.priceData} />
+      <StructuredData data={availableData.data.summaries || []} priceData={availableData.data.priceData} />
+      <StructuredData data={categoryData.data.summaries || []} priceData={categoryData.data.priceData} />
+      <StructuredData data={countryData.data.summaries || []} priceData={countryData.data.priceData} />
     </main>
   )
 }

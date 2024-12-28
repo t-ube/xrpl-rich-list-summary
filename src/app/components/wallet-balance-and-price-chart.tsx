@@ -32,6 +32,7 @@ interface WalletBalanceAndPriceChartProps {
   onClose: () => void;
   isMobile: boolean;
   priceData: MarketDataResponse[] | null;
+  sourceType: string;
 }
 
 const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
@@ -39,7 +40,8 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
   isOpen,
   onClose,
   isMobile,
-  priceData
+  priceData,
+  sourceType
 }) => {
   const [data, setData] = useState<TimeSeriesData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,7 +59,7 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
       setLoading(true);
       setError(null);
       
-      fetch(`/api/time-series/${encodeURIComponent(walletLabel)}`)
+      fetch(`/api/time-series/${sourceType}/${encodeURIComponent(walletLabel)}`)
         .then(async (walletRes) => {
           if (!walletRes.ok) throw new Error('Failed to fetch data');
           const walletData = await walletRes.json() as TimeSeriesData[];

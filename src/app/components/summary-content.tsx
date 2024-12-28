@@ -3,21 +3,13 @@
 
 import DataTable from '@/app/components/data-table'
 import CryptoTreemap from '@/app/components/crypto-treemap-apexcharts'
-import { MarketDataResponse } from '@/types/market-data'
-import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
+import { SummaryContentProps } from '@/types/summary-content'
 
-export interface SummaryContentProps {
-  data: {
-    summaries: RichListSummaryWithChanges[];
-    priceData: MarketDataResponse[] | null;
-  };
-}
-
-export function SummaryContent({ data }: SummaryContentProps) {
+export function SummaryContent({ data, sourceType }: SummaryContentProps) {
   return (
     <div className="space-y-6">
-      <CryptoTreemap data={data.summaries} />
-      <DataTable data={data.summaries} priceData={data.priceData} />
+      <CryptoTreemap data={data.summaries} sourceType={sourceType} />
+      <DataTable data={data.summaries} priceData={data.priceData} sourceType={sourceType} />
     </div>
   );
 }
