@@ -105,10 +105,15 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
     : `fixed right-0 top-0 h-full w-[600px] transform transition-transform duration-300 ease-in-out border-l border-gray-200 ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`;
-
+      
   const formatXAxis = (time: string) => {
     const date = new Date(time);
-    return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    const hours = date.getHours();
+    return `${date.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      hour12: false
+    })} ${String(hours === 24 ? '00' : hours.toString().padStart(2, '0'))}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
   const formatTooltip = (value: number) => {
