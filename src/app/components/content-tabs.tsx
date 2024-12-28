@@ -1,4 +1,4 @@
-// src/app/components/tabs-with-swiper.tsx
+// src/app/components/content-tabs.tsx
 'use client'
 
 import { useState } from 'react'
