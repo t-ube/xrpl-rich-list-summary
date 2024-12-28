@@ -6,6 +6,9 @@ import { ApexOptions } from 'apexcharts';
 import { RichListSummaryWithChanges } from '@/types/rich_list_changes';
 import LoadingLogo from '@/app/components/loading-logo';
 
+const CHANGE_THRESHOLD = 1.0; // 1.0 XRP未満の変化は0として扱う
+const PERCENTAGE_THRESHOLD = 0.001 // 0.001%未満の変化も0として扱う
+
 const Chart = dynamic(() => import('react-apexcharts'), { 
   ssr: false,
   loading: () => <LoadingLogo />
@@ -21,10 +24,14 @@ interface TreemapDataItem {
   foreColor?: string;
 }
 
-const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[], sourceType: string }> = ({ data, sourceType }) => {
-  const CHANGE_THRESHOLD = 1.0; // 1.0 XRP未満の変化は0として扱う
-  const PERCENTAGE_THRESHOLD = 0.001 // 0.001%未満の変化も0として扱う
+const getPercentageDisplay = (percentage: number) => {
+  if (Math.abs(percentage) < PERCENTAGE_THRESHOLD) return '0%';
+  if (percentage === 0) return '0%';
+  if (Math.abs(percentage) < 0.01) return percentage > 0 ? '<+0.01%' : '<-0.01%';
+  return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
+};
 
+const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[], sourceType: string }> = ({ data, sourceType }) => {
   const getTitle = (type: string): string => {
     switch (type) {
       case "total":
@@ -89,7 +96,7 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[], sourceType: 
 
         if (item.show_total_xrp >= threshold) {
           mainData.push({
-            x: item.grouped_label,
+            x: `${item.grouped_label}\n${getPercentageDisplay(effectivePercentage)}`,
             y: item.show_total_xrp,
             fillColor: getColor(effectivePercentage),
             change_xrp: effectiveChange,
@@ -133,6 +140,13 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[], sourceType: 
         fontSize: '32px',
         fontFamily: 'system-ui'
       },
+      formatter: function(text) {
+        if (typeof text === 'string') {
+          const lines = text.split('\n');
+          return [lines[0], lines[1]];
+        }
+        return '';
+      },
       offsetY: -4
     },
     plotOptions: {
@@ -162,16 +176,11 @@ const CryptoTreemap: React.FC<{ data: RichListSummaryWithChanges[], sourceType: 
           if (percentage === 0) return '→';
           return percentage > 0 ? '↑' : '↓';
         };
-        const getPercentageDisplay = (percentage: number) => {
-          if (Math.abs(percentage) < PERCENTAGE_THRESHOLD) return '0%';
-          if (percentage === 0) return '0%';
-          if (Math.abs(percentage) < 0.01) return percentage > 0 ? '<+0.01%' : '<-0.01%';
-          return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
-        };
+        const lines = dataPoint.x.split('\n');
 
         return `
           <div class="p-4">
-            <div class="font-bold">${dataPoint.x}</div>
+            <div class="font-bold">${lines[0]}</div>
             <div class="text-sm text-gray-600">
               ${new Intl.NumberFormat('en-US', {
                 style: 'currency',
