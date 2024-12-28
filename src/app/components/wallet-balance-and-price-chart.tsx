@@ -191,7 +191,7 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
                 />
                 <Tooltip 
                   formatter={(value: number, name: string) => {
-                    if (name === 'XRP Balance') {
+                    if (name === 'Balance') {
                       return [formatTooltip(value), name];
                     }
                     return [`$${value.toFixed(3)}`, name];
