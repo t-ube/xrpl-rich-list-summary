@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { X } from 'lucide-react';
-import { ExchangeIcon } from './exchange-icon'
+import { CloudinaryExchangeIcon } from './cloudinary-exchange-icon'
+import { CountryIcon } from '@/app/components/country-icon'
+import { CategoryIcon } from '@/app/components/category-icon'
 
 interface TimeSeriesData {
   time: string;
@@ -33,6 +35,15 @@ interface WalletBalanceAndPriceChartProps {
   isMobile: boolean;
   priceData: MarketDataResponse[] | null;
   sourceType: string;
+}
+
+const getIcon = (sourceType:string, label: string) => {
+  if (sourceType == 'country') {
+    return <CountryIcon country={label}/>
+  } else if (sourceType == 'category') {
+    return <CategoryIcon category={label}/>
+  }
+  return <CloudinaryExchangeIcon exchange={label} />
 }
 
 const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
@@ -112,7 +123,7 @@ const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
       <div className="h-full flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold flex items-center gap-2">
-            <ExchangeIcon exchange={walletLabel} />
+            {getIcon(sourceType, walletLabel)}
             <span>{walletLabel} - XRP Balance</span>
           </h3>
           <button
