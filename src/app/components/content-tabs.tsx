@@ -1,7 +1,8 @@
 // src/app/components/content-tabs.tsx
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SummaryContent } from '@/app/components/summary-content'
 import { SummaryContentData } from '@/types/summary-content'
@@ -9,6 +10,7 @@ import { Loader2 } from 'lucide-react'
 import LoadingLogo from '@/app/components/loading-logo'
 
 type TabValue = 'total' | 'available' | 'country' | 'category';
+const VALID_TABS: TabValue[] = ['total', 'available', 'country', 'category'];
 
 interface ContentTabsProps {
   totalData: SummaryContentData;
@@ -66,15 +68,46 @@ const ContentTabs: React.FC<ContentTabsProps> = ({
   categoryData,
   countryData
 }) => {
-  const [activeTab, setActiveTab] = useState<TabValue>('total');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  // Get initial tab value from URL or default to 'total'
+  const getValidTab = (tab: string | null): TabValue => {
+    return VALID_TABS.includes(tab as TabValue) ? (tab as TabValue) : 'total';
+  };
+
+  const initialTab = getValidTab(searchParams.get('tab'));
+  const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Update URL when tab changes
+  const updateQueryParam = (value: TabValue) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set('tab', value);
+    const search = current.toString();
+    const query = search ? `?${search}` : '';
+    router.replace(`${pathname}${query}`);
+  };
+
   const handleTabChange = (value: TabValue) => {
+    if (!VALID_TABS.includes(value)) return;
+    
     setIsLoading(true);
     setActiveTab(value);
+    updateQueryParam(value);
+    
     // Short timeout to allow UI to update before heavy rendering
     setTimeout(() => setIsLoading(false), 100);
   };
+
+  // Sync with URL changes
+  useEffect(() => {
+    const newTab = getValidTab(searchParams.get('tab'));
+    if (newTab !== activeTab) {
+      setActiveTab(newTab);
+    }
+  }, [searchParams, activeTab]);
 
   const getTabContent = (value: TabValue, data: SummaryContentData['data']) => (
     <TabsContent value={value} className="mt-6">

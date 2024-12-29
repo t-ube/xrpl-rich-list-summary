@@ -1,4 +1,5 @@
 // src/app/page.tsx
+import { Suspense } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import SlimDisclaimer from '@/app/components/disclaimer-slim'
 import ContentTabs from '@/app/components/content-tabs'
@@ -84,12 +85,14 @@ export default async function Home() {
       </header>
 
       {/* Client Component for interactive tabs */}
-      <ContentTabs
-        totalData={totalData as SummaryContentData}
-        availableData={availableData as SummaryContentData}
-        categoryData={categoryData as SummaryContentData}
-        countryData={countryData as SummaryContentData}
-      />
+      <Suspense fallback={<div>Loading tabs...</div>}>
+        <ContentTabs
+          totalData={totalData as SummaryContentData}
+          availableData={availableData as SummaryContentData}
+          categoryData={categoryData as SummaryContentData}
+          countryData={countryData as SummaryContentData}
+        />
+      </Suspense>
       
       <StructuredData data={totalData.data.summaries || []} priceData={totalData.data.priceData} />
       <StructuredData data={availableData.data.summaries || []} priceData={availableData.data.priceData} />
