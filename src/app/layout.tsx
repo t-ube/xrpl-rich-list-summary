@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: 'XRP Rich List Summary | Detailed XRP Holdings Analysis',
   description: 'Comprehensive analysis of XRP holdings, featuring real-time rich list data, price trends, and distribution metrics. Track top XRP wallets and market movements.',
   keywords: 'XRP, Rich List, Cryptocurrency, Blockchain Analysis, XRP Holdings, Market Data',
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     siteName: 'XRP Rich List Summary',
     title: 'XRP Rich List Summary',
