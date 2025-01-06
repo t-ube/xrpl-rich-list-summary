@@ -44,6 +44,9 @@ export const metadata: Metadata = {
     images: [`${process.env.NEXT_PUBLIC_SITE_URL}/api/og/cloudinary?timestamp=${Date.now()}`],
     title: 'XRP Rich List Summary',
     description: 'Track and analyze XRP holdings with real-time rich list data',
+  },
+  other: {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
   }
 }
 
