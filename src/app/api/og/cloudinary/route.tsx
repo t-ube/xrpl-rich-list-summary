@@ -65,7 +65,12 @@ export async function GET() {
         console.error('Cleanup error:', error)
       })
 
-    return NextResponse.redirect(result.secure_url, { status: 307 })
+    return NextResponse.redirect(result.secure_url, { 
+      status: 307,
+      headers: {
+        'Cache-Control': 'public, max-age=3600',
+      }
+    })
 
   } catch (error) {
     console.error('Error handling OG image:', error)

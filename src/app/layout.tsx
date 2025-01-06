@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     description: 'Track and analyze XRP holdings with real-time rich list data',
   },
   other: {
-    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+    'Cache-Control': 'public, max-age=3600'
   }
 }
 
