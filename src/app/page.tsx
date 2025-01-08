@@ -10,6 +10,7 @@ import { MARKET_DATA_CONFIG } from '@/config/market-data'
 import { TABLE_CONFIG } from '@/config/table-config'
 import { SummaryContentData } from '@/types/summary-content'
 import { RichListSummaryWithChanges } from '@/types/rich_list_changes'
+import Footer from '@/app/components/footer'
 
 // キャッシュと再生成の設定
 export const revalidate = 3600 // 1時間ごとに再生成
@@ -77,27 +78,30 @@ export default async function Home() {
   ]);
 
   return (
-    <main className="container mx-auto px-2 py-8">
-      <header>
-        <h1 className="text-3xl font-bold pl-2 mb-8">XRP Rich List Summary</h1>
-        <SlimDisclaimer />
-        <LastUpdated data={totalData.data.summaries || []} />
-      </header>
+    <div>
+      <main className="container mx-auto px-2 py-8">
+        <header>
+          <h1 className="text-3xl font-bold pl-2 mb-8">XRP Rich List Summary</h1>
+          <SlimDisclaimer />
+          <LastUpdated data={totalData.data.summaries || []} />
+        </header>
 
-      {/* Client Component for interactive tabs */}
-      <Suspense fallback={<div>Loading tabs...</div>}>
-        <ContentTabs
-          totalData={totalData as SummaryContentData}
-          availableData={availableData as SummaryContentData}
-          categoryData={categoryData as SummaryContentData}
-          countryData={countryData as SummaryContentData}
-        />
-      </Suspense>
-      
-      <StructuredData data={totalData.data.summaries || []} priceData={totalData.data.priceData} />
-      <StructuredData data={availableData.data.summaries || []} priceData={availableData.data.priceData} />
-      <StructuredData data={categoryData.data.summaries || []} priceData={categoryData.data.priceData} />
-      <StructuredData data={countryData.data.summaries || []} priceData={countryData.data.priceData} />
-    </main>
+        {/* Client Component for interactive tabs */}
+        <Suspense fallback={<div>Loading tabs...</div>}>
+          <ContentTabs
+            totalData={totalData as SummaryContentData}
+            availableData={availableData as SummaryContentData}
+            categoryData={categoryData as SummaryContentData}
+            countryData={countryData as SummaryContentData}
+          />
+        </Suspense>
+        
+        <StructuredData data={totalData.data.summaries || []} priceData={totalData.data.priceData} />
+        <StructuredData data={availableData.data.summaries || []} priceData={availableData.data.priceData} />
+        <StructuredData data={categoryData.data.summaries || []} priceData={categoryData.data.priceData} />
+        <StructuredData data={countryData.data.summaries || []} priceData={countryData.data.priceData} />
+      </main>
+      <Footer />
+    </div>
   )
 }
