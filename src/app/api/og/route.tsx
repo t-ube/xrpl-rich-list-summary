@@ -11,7 +11,7 @@ export async function GET() {
       .select('*')
       .gte('show_total_xrp', 1000)
       .order('show_total_xrp', { ascending: false })
-      .limit(100)
+      .limit(15)
 
     const CHANGE_THRESHOLD = 1.0
     const PERCENTAGE_THRESHOLD = 0.001
