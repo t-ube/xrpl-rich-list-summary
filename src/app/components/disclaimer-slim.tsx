@@ -26,7 +26,7 @@ const Disclaimer = () => {
               </a>
               <span> and XRPL APIs and </span>
               <a 
-                href="https://data.xrplf.org/docs" 
+                href="https://xrpldata.inftf.org/docs" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"
