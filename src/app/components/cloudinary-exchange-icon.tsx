@@ -85,7 +85,16 @@ export const EXCHANGE_ICONS: Record<string, string> = {
   'Chips.gg': 'exchange-icons/chipsgg_logo',
   'Flipster': 'exchange-icons/flipster',
   'Orionx': 'exchange-icons/orionx',
-  'FixedFloat': 'exchange-icons/fixed-float-icon-darkbg'
+  'FixedFloat': 'exchange-icons/fixed-float-icon-darkbg',
+  'Evernorth': 'exchange-icons/evernorth',
+  'Flare Core Vault': 'exchange-icons/flare-core-vault',
+  'XPR Bridge': 'exchange-icons/xpr-bridge',
+  'Ceffu': 'exchange-icons/ceffu',
+  'Doppler Finance': 'exchange-icons/doppler-finance',
+  'Axelar Bridge': 'exchange-icons/axelar-bridge',
+  'Xaman Service Fee': 'exchange-icons/xaman-service-fee',
+  'XUMM': 'exchange-icons/xumm',
+  'xrp.cafe': 'exchange-icons/xrp_cafe',
 }
 
 export function CloudinaryExchangeIcon({ exchange, size = 32 }: ExchangeIconProps) {
