@@ -95,6 +95,7 @@ export const EXCHANGE_ICONS: Record<string, string> = {
   'Xaman Service Fee': 'exchange-icons/xaman-service-fee',
   'XUMM': 'exchange-icons/xumm',
   'xrp.cafe': 'exchange-icons/xrp_cafe',
+  'First Ledger': 'exchange-icons/first-ledger',
 }
 
 export function CloudinaryExchangeIcon({ exchange, size = 32 }: ExchangeIconProps) {
