@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ArrowUpDown } from 'lucide-react'
-import { CloudinaryExchangeIcon } from './cloudinary-exchange-icon'
+import { CloudflareExchangeIcon } from './cloudflare-exchange-icon'
 //import WalletBalanceChart from '@/app/components/wallet-balance-chart'
 import WalletBalanceAndPriceChart from '@/app/components/wallet-balance-and-price-chart'
 import { MarketDataResponse } from '@/types/market-data'
@@ -135,7 +135,7 @@ const getIcon = (sourceType:string, row: Row<RichListSummaryWithChanges>) => {
   } else if (sourceType == 'category') {
     return <CategoryIcon category={label}/>
   }
-  return <CloudinaryExchangeIcon exchange={label} />
+  return <CloudflareExchangeIcon exchange={label} />
 }
 
 // 基本のカラム配列を取得

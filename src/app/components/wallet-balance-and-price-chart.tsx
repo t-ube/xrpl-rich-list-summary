@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { X } from 'lucide-react';
-import { CloudinaryExchangeIcon } from './cloudinary-exchange-icon'
+import { CloudflareExchangeIcon } from './cloudflare-exchange-icon'
 import { CountryIcon } from '@/app/components/country-icon'
 import { CategoryIcon } from '@/app/components/category-icon'
 
@@ -43,7 +43,7 @@ const getIcon = (sourceType:string, label: string) => {
   } else if (sourceType == 'category') {
     return <CategoryIcon category={label}/>
   }
-  return <CloudinaryExchangeIcon exchange={label} />
+  return <CloudflareExchangeIcon exchange={label} />
 }
 
 const WalletBalanceAndPirceChart: React.FC<WalletBalanceAndPriceChartProps> = ({
